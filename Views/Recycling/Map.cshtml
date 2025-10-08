@@ -1,0 +1,54 @@
+@model IEnumerable<RecycleRank.Models.Bin>
+@{
+    ViewData["Title"] = "Recycling Map";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Navigation -->
+            <div class="page-navigation mb-4">
+                <a href="/Home/Index" class="btn btn-outline-primary">
+                    <span>🏠</span> Home
+                </a>
+                <a href="/Recycling/Index" class="btn btn-outline-success">
+                    <span>♻️</span> Log Activity
+                </a>
+                <a href="/Leaderboard/Index" class="btn btn-outline-warning">
+                    <span>🏆</span> Leaderboard
+                </a>
+                <a href="/Admin/Index" class="btn btn-outline-secondary">
+                    <span>⚙️</span> Admin
+                </a>
+            </div>
+            
+            <h1 class="mb-4">🗺️ Recycling Bin Map</h1>
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Find Recycling Bins Near You</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var bin in Model)
+                        {
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">@bin.Name</h6>
+                                        <p class="card-text">
+                                            <small class="text-muted">@bin.Address</small><br>
+                                            <small>📍 @bin.Latitude, @bin.Longitude</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <strong>Note:</strong> Interactive map integration coming soon! For now, browse the list of available recycling bins above.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

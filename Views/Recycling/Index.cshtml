@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Recycling Log";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Navigation -->
+            <div class="page-navigation mb-4">
+                <a href="/Home/Index" class="btn btn-outline-primary">
+                    <span>🏠</span> Home
+                </a>
+                <a href="/Recycling/Map" class="btn btn-outline-info">
+                    <span>🗺️</span> Map
+                </a>
+                <a href="/Leaderboard/Index" class="btn btn-outline-warning">
+                    <span>🏆</span> Leaderboard
+                </a>
+                <a href="/Admin/Index" class="btn btn-outline-secondary">
+                    <span>⚙️</span> Admin
+                </a>
+            </div>
+            
+            <h1 class="mb-4">♻️ Log Your Recycling</h1>
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Record Your Recycling Activity</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="LogRecycling" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="binId" class="form-label">Recycling Bin Location</label>
+                                <select class="form-select" id="binId" name="BinId" required>
+                                    <option value="">Select a bin location...</option>
+                                    @foreach (var bin in ViewBag.Bins)
+                                    {
+                                        <option value="@bin.Id">@bin.Name - @bin.Address</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="material" class="form-label">Material Type</label>
+                                <select class="form-select" id="material" name="Material" required>
+                                    <option value="">Select material...</option>
+                                    @foreach (var material in ViewBag.Materials)
+                                    {
+                                        <option value="@material.Name">@material.Name (@material.PointsPerUnit pts/unit)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">Log Recycling Activity</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
