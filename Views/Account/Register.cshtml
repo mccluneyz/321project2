@@ -2,18 +2,32 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="container">
+<div class="container" style="margin-top: 100px;">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white text-center">
-                    <h3>Join RecycleRank</h3>
+            <div class="card shadow" style="border-radius: 20px; border: none;">
+                <div class="card-header bg-success text-white text-center" style="border-radius: 20px 20px 0 0; padding: 25px;">
+                    <h3>♻️ Join RecycleRank</h3>
+                    <p class="mb-0" style="opacity: 0.9;">Create your account and start recycling!</p>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="padding: 30px;">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ViewBag.Error
+                        </div>
+                    }
+                    
                     <form asp-action="Register" method="post">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email Address</label>
@@ -24,11 +38,13 @@
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg">Create Account</button>
+                            <button type="submit" class="btn btn-success btn-lg" style="border-radius: 10px; padding: 12px;">
+                                Create Account
+                            </button>
                         </div>
                     </form>
                     <div class="text-center mt-3">
-                        <p>Already have an account? <a asp-action="Login">Login here</a></p>
+                        <p>Already have an account? <a href="/Account/Login" style="color: #28a745; font-weight: 500; text-decoration: underline;">Login here</a></p>
                     </div>
                 </div>
             </div>

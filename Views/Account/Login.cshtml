@@ -1,33 +1,269 @@
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In / Sign Up";
 }
 
-<div class="container">
+<style>
+    .auth-container {
+        margin-top: 80px;
+        margin-bottom: 100px;
+        padding: 20px;
+        min-height: calc(100vh - 80px);
+    }
+    
+    .auth-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .auth-header {
+        background: linear-gradient(135deg, #28a745 0%, #007bff 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .auth-header h2 {
+        margin: 0 0 10px 0;
+        font-size: 2rem;
+    }
+    
+    .auth-tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .auth-tab {
+        flex: 1;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #6c757d;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+    
+    .auth-tab:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .auth-tab.active {
+        background: white;
+        color: #28a745;
+        border-bottom-color: #28a745;
+    }
+    
+    .auth-form-container {
+        padding: 40px;
+    }
+    
+    .auth-form {
+        display: none;
+    }
+    
+    .auth-form.active {
+        display: block;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .btn-auth {
+        width: 100%;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-signin {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-signin:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-signup {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-signup:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+</style>
+
+<div class="container auth-container">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white text-center">
-                    <h3>Login to RecycleRank</h3>
+        <div class="col-lg-10 col-xl-8">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <h2>♻️ Welcome to R3cycle</h2>
+                    <p class="mb-0">Join the recycling revolution!</p>
                 </div>
-                <div class="card-body">
-                    <form asp-action="Login" method="post">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="showSignIn()">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                    <button class="auth-tab" onclick="showSignUp()">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </button>
+                </div>
+                
+                <div class="auth-form-container">
+                    <!-- Sign In Form -->
+                    <form class="auth-form active" asp-controller="Account" asp-action="Login" method="post" id="signInForm">
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @ViewBag.Error
+                            </div>
+                        }
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                        
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg">Login</button>
+                        
+                        <button type="submit" class="btn btn-auth btn-signin">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </button>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border: 2px solid #007bff;">
+                            <p style="color: #333; margin-bottom: 15px; font-weight: 600; text-align: center;">Don't have an account?</p>
+                            <button type="button" onclick="showSignUp()" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 10px;">
+                                <i class="fas fa-user-plus"></i> CREATE ACCOUNT
+                            </button>
                         </div>
                     </form>
-                    <div class="text-center mt-3">
-                        <p>Don't have an account? <a asp-action="Register">Register here</a></p>
-                    </div>
+                    
+                    <!-- Sign Up Form -->
+                    <form class="auth-form" asp-controller="Account" asp-action="Register" method="post" id="signUpForm">
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @ViewBag.Error
+                            </div>
+                        }
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 2px solid #28a745;">
+                            <p style="color: #333; margin-bottom: 15px; font-weight: 600; text-align: center;">Already have an account?</p>
+                            <button type="button" onclick="showSignIn()" class="btn btn-success" style="width: 100%; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 10px;">
+                                <i class="fas fa-sign-in-alt"></i> CLICK HERE TO SIGN IN
+                            </button>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last name" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regEmail">Email Address</label>
+                            <input type="email" class="form-control" id="regEmail" name="email" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regPassword">Password</label>
+                            <input type="password" class="form-control" id="regPassword" name="password" placeholder="Create a password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-auth btn-signup">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Auto-show sign up tab if there's an error from registration or signup=true parameter
+    @if (ViewBag.ShowSignUp == true)
+    {
+        <text>
+        document.addEventListener('DOMContentLoaded', function() {
+            showSignUp();
+        });
+        </text>
+    }
+    
+    // Check URL parameter for signup
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('signup') === 'true') {
+            showSignUp();
+        }
+    });
+    
+    function showSignIn() {
+        // Update tabs
+        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.auth-tab')[0].classList.add('active');
+        
+        // Update forms
+        document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+        document.getElementById('signInForm').classList.add('active');
+    }
+    
+    function showSignUp() {
+        // Update tabs
+        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        
+        // Update forms
+        document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+        document.getElementById('signUpForm').classList.add('active');
+    }
+</script>
