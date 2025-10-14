@@ -300,12 +300,12 @@
                 </div>
                 
                 <div class="welcome-actions">
-                    <button class="btn btn-primary btn-lg" onclick="showLoginForm()">
+                    <a href="/Account/Login" class="btn btn-primary btn-lg">
                         <span>👤</span> Sign In
-                    </button>
-                    <button class="btn btn-success btn-lg" onclick="showRegisterForm()">
+                    </a>
+                    <a href="/Account/Login?signup=true" class="btn btn-success btn-lg">
                         <span>✨</span> Get Started
-                    </button>
+                    </a>
                     <button class="btn btn-outline-secondary btn-lg" onclick="continueAsGuest()">
                         <span>👀</span> Continue as Guest
                     </button>
@@ -370,12 +370,15 @@
 </div>
 
 <!-- Guest Status Banner -->
-<div id="guestBanner" class="guest-banner">
-    <div class="guest-content">
-        <span>👤 You're browsing as a guest</span>
-        <button class="btn btn-sm btn-outline-light" onclick="showLoginPopup()">Sign In</button>
+@if (Context.Session.GetInt32("UserId") == null)
+{
+    <div id="guestBanner" class="guest-banner">
+        <div class="guest-content">
+            <span>👤 You're browsing as a guest</span>
+            <a href="/Account/Login" class="btn btn-sm btn-outline-light">Sign In</a>
+        </div>
     </div>
-</div>
+}
 
 <style>
 /* Instagram-Style Full-Width Banner */
@@ -1175,6 +1178,12 @@
 <script>
 // Welcome Popup Functions
 function showWelcomePopup() {
+    // Check if user is logged in
+    var isLoggedIn = @(Context.Session.GetInt32("UserId") != null ? "true" : "false");
+    if (isLoggedIn) {
+        return; // Don't show popup if user is logged in
+    }
+    
     document.getElementById('welcomeModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -1235,7 +1244,10 @@ function continueAsGuest() {
 }
 
 function showGuestBanner() {
-    document.getElementById('guestBanner').style.display = 'block';
+    var isLoggedIn = @(Context.Session.GetInt32("UserId") != null ? "true" : "false");
+    if (!isLoggedIn) {
+        document.getElementById('guestBanner').style.display = 'block';
+    }
 }
 
 // Close modals when clicking outside
@@ -1251,8 +1263,11 @@ document.getElementById('loginModal').addEventListener('click', function(e) {
     }
 });
 
-// Show welcome popup on page load
+// Show welcome popup on page load ONLY for guests
 window.addEventListener('load', function() {
-    setTimeout(showWelcomePopup, 500);
+    var isLoggedIn = @(Context.Session.GetInt32("UserId") != null ? "true" : "false");
+    if (!isLoggedIn) {
+        setTimeout(showWelcomePopup, 500);
+    }
 });
 </script>
