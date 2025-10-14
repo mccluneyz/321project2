@@ -16,16 +16,19 @@
                 <button class="icon-btn" onclick="window.location.href='/Recycling/Index'" title="Recycle">
                     ♻️
                 </button>
-                <button class="icon-btn" onclick="window.location.href='/Admin/Index'" title="Admin">
-                    ⚙️
+                <button class="icon-btn" onclick="window.location.href='/BattlePass/Index'" title="Battle Pass">
+                    🎮
                 </button>
                 @if (Context.Session.GetInt32("UserId") != null)
                 {
+                    <button class="icon-btn" onclick="window.location.href='/Account/Logout'" title="Logout">
+                        ⏻
+                    </button>
                     <button class="icon-btn profile-btn" onclick="window.location.href='/Profile/Index'" title="Profile">
                         👤
                     </button>
-                    <button class="icon-btn" onclick="window.location.href='/Account/Logout'" title="Logout">
-                        🚪
+                    <button class="icon-btn" onclick="window.location.href='/Settings/Index'" title="Settings">
+                        ⚙️
                     </button>
                 }
                 else

@@ -3,6 +3,22 @@
     ViewData["Title"] = "Leaderboard";
 }
 
+<style>
+    .rank-icon {
+        font-size: 1.2rem;
+        margin-right: 8px;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .equipped-title {
+        font-style: italic;
+        opacity: 0.8;
+    }
+</style>
+
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -41,6 +57,7 @@
                                 }
                                 @foreach (var user in Model)
                                 {
+                                    var rankStyle = ViewBag.GetRankStyle(user.Rank);
                                     <tr>
                                         <td>
                                             @if (rank <= 3)
@@ -52,10 +69,21 @@
                                                 <span class="badge bg-secondary">@rank</span>
                                             }
                                         </td>
-                                        <td>@user.Name</td>
-                                        <td>@user.Points</td>
                                         <td>
-                                            <span class="badge bg-info">@user.Rank</span>
+                                            <span class="rank-icon" style="color: @rankStyle.Color; text-shadow: 0 0 8px @rankStyle.GlowColor;">@rankStyle.Icon</span>
+                                            <span style="color: @rankStyle.Color; font-weight: 600;">@user.Name</span>
+                                            @{
+                                                var equippedTitle = ((List<RecycleRank.Models.UserReward>)ViewBag.UserRewards)
+                                                    .FirstOrDefault(ur => ur.UserId == user.Id);
+                                            }
+                                            @if (equippedTitle != null)
+                                            {
+                                                <span class="equipped-title" style="color: #6c757d; font-size: 0.9em; margin-left: 8px;">@equippedTitle.RewardValue</span>
+                                            }
+                                        </td>
+                                        <td>@user.TotalPointsEarned</td>
+                                        <td>
+                                            <span class="badge" style="background-color: @rankStyle.Color; color: white;">@user.Rank</span>
                                         </td>
                                     </tr>
                                     rank++;

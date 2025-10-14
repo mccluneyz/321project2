@@ -86,7 +86,7 @@ namespace RecycleRank.Controllers
                     Password = password,
                     Name = fullName,
                     Points = 0,
-                    Rank = RankLevel.Bronze,
+                    Rank = RankLevel.Plastic,
                     IsAdmin = false
                 };
 
