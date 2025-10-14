@@ -1,0 +1,737 @@
+@model RecycleRank.Models.User
+@{
+    ViewData["Title"] = "Battle Pass & Shop";
+}
+
+<style>
+    .battlepass-container {
+        margin-top: 100px;
+        padding: 20px;
+    }
+    
+    .battlepass-header {
+        background: linear-gradient(135deg, #28a745 0%, #007bff 100%);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .battlepass-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .battlepass-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .user-points {
+        background: rgba(255,255,255,0.2);
+        padding: 15px 25px;
+        border-radius: 15px;
+        margin-top: 20px;
+        display: inline-block;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+    
+    .rank-toggle-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+        padding: 12px 20px;
+        border-radius: 15px;
+        margin-top: 15px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .rank-toggle-btn:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        transform: translateY(-2px);
+    }
+    
+    .rank-system-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .rank-system-content h3 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .rank-explanation h4 {
+        color: #28a745;
+        margin-bottom: 10px;
+    }
+    
+    .rank-levels {
+        margin: 20px 0;
+    }
+    
+    .rank-level {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin: 10px 0;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .rank-level.current-rank {
+        background: linear-gradient(135deg, #28a745 0%, #007bff 100%);
+        color: white;
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .rank-icon {
+        font-size: 2rem;
+        margin-right: 15px;
+    }
+    
+    .rank-info {
+        flex: 1;
+    }
+    
+    .rank-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .rank-multiplier {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+    
+    .rank-range {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-bottom: 3px;
+    }
+    
+    .rank-description {
+        font-size: 0.85rem;
+        opacity: 0.7;
+    }
+    
+    .example-calculation {
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    
+    .example-calculation h4 {
+        color: #1976d2;
+        margin-bottom: 10px;
+    }
+    
+    .calculation {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .base-points {
+        color: #666;
+    }
+    
+    .multiplier {
+        color: #28a745;
+    }
+    
+    .total-points {
+        color: #007bff;
+    }
+    
+    .battlepass-tiers {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .battlepass-slider {
+        position: relative;
+        overflow-x: auto;
+        padding: 20px 0;
+        scrollbar-width: thin;
+        scrollbar-color: #28a745 #f1f1f1;
+    }
+    
+    .battlepass-slider::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .battlepass-slider::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .battlepass-slider::-webkit-scrollbar-thumb {
+        background: #28a745;
+        border-radius: 4px;
+    }
+    
+    .tiers-track {
+        display: flex;
+        gap: 15px;
+        min-width: max-content;
+        padding: 0 20px;
+    }
+    
+    .tier-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        border: 3px solid #e9ecef;
+        transition: all 0.3s ease;
+        position: relative;
+        min-width: 180px;
+        flex-shrink: 0;
+    }
+    
+    .tier-card.claimable {
+        border-color: #ffc107;
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    }
+    
+    .tier-card.claimed {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    }
+    
+    .tier-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .tier-number {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .tier-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .tier-reward-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+    }
+    
+    .tier-reward-description {
+        color: #666;
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+    
+    .tier-points {
+        background: #28a745;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .tier-status {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 1.2rem;
+    }
+    
+    .progress-indicator {
+        text-align: center;
+        margin: 20px 0;
+        font-size: 1.1rem;
+        color: #666;
+    }
+    
+    .scroll-hint {
+        text-align: center;
+        color: #28a745;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        font-style: italic;
+    }
+    
+    .claim-btn {
+        background: #ffc107;
+        color: #333;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .claim-btn:hover:not(:disabled) {
+        background: #e0a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+    
+    .claim-btn:disabled {
+        background: #6c757d;
+        color: white;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .shop-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .shop-item {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .shop-item:hover {
+        border-color: #28a745;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    
+    .shop-item-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .shop-item-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .shop-item-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .shop-item-cost {
+        background: #ffc107;
+        color: #333;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: inline-block;
+    }
+    
+    .purchase-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .purchase-btn:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+    
+    .purchase-btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .owned-badge {
+        background: #007bff;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+</style>
+
+<div class="container battlepass-container">
+    <div class="battlepass-header">
+        <h1 class="battlepass-title">🎮 Battle Pass</h1>
+        <p class="battlepass-subtitle">Earn points to unlock exclusive rewards!</p>
+        <div class="user-points">
+            💰 @ViewBag.User.TotalPointsEarned Points Earned | 💳 @ViewBag.User.Points Points Available
+        </div>
+        
+        <!-- Rank System Toggle -->
+        <button class="rank-toggle-btn" onclick="toggleRankSystem()">
+            📊 How Points & Ranks Work
+        </button>
+    </div>
+
+    <!-- Rank System Panel (Hidden by default) -->
+    <div id="rankSystemPanel" class="rank-system-panel" style="display: none;">
+        <div class="rank-system-content">
+            <h3>🏆 Rank System Explained</h3>
+            
+            <div class="rank-explanation">
+                <h4>📈 How It Works:</h4>
+                <p>Higher ranks get bonus multipliers on all points earned! Just like Chick-fil-A's tiered system!</p>
+                
+                <div class="rank-levels">
+                    @{
+                        var allRanks = new[] { 
+                            new { Level = RecycleRank.Models.RankLevel.Plastic, Name = "Plastic", Multiplier = 1.0, MinPoints = 0, MaxPoints = 99, Color = "#CD7F32", Description = "Welcome to recycling! Start earning points.", Icon = "🥤" },
+                            new { Level = RecycleRank.Models.RankLevel.Glass, Name = "Glass", Multiplier = 1.1, MinPoints = 100, MaxPoints = 299, Color = "#C0C0C0", Description = "You're getting the hang of it! 10% bonus points.", Icon = "🍾" },
+                            new { Level = RecycleRank.Models.RankLevel.Paper, Name = "Paper", Multiplier = 1.2, MinPoints = 300, MaxPoints = 599, Color = "#FFD700", Description = "Excellent recycler! 20% bonus points.", Icon = "📄" },
+                            new { Level = RecycleRank.Models.RankLevel.Metal, Name = "Metal", Multiplier = 1.3, MinPoints = 600, MaxPoints = 999, Color = "#E5E4E2", Description = "Recycling champion! 30% bonus points.", Icon = "🥫" },
+                            new { Level = RecycleRank.Models.RankLevel.Organic, Name = "Organic", Multiplier = 1.5, MinPoints = 1000, MaxPoints = int.MaxValue, Color = "#B9F2FF", Description = "Eco-warrior! 50% bonus points.", Icon = "🍃" }
+                        };
+                    }
+                    
+                    @foreach (var rank in allRanks)
+                    {
+                        <div class="rank-level @(ViewBag.User.Rank == rank.Level ? "current-rank" : "")" style="border-left: 4px solid @rank.Color;">
+                            <div class="rank-icon">@rank.Icon</div>
+                            <div class="rank-info">
+                                <div class="rank-name">@rank.Name</div>
+                                <div class="rank-multiplier">@rank.Multiplier.ToString("0.0")x Multiplier</div>
+                                <div class="rank-range">@rank.MinPoints - @(rank.MaxPoints == int.MaxValue ? "∞" : rank.MaxPoints.ToString()) points</div>
+                                <div class="rank-description">@rank.Description</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                <div class="example-calculation">
+                    <h4>💡 Example:</h4>
+                    <p>If you recycle 5 plastic bottles (10 points each) as a <strong>Paper member (1.2x multiplier)</strong>:</p>
+                    <div class="calculation">
+                        <span class="base-points">Base: 5 × 10 = 50 points</span>
+                        <span class="multiplier">× 1.2 multiplier</span>
+                        <span class="total-points">= 60 total points!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="battlepass-tiers">
+        <h2 class="section-title">🏆 Free Battle Pass Rewards</h2>
+        
+        
+        
+        <div class="progress-indicator">
+            You have <strong>@ViewBag.User.TotalPointsEarned points</strong> - Keep recycling to unlock more tiers!
+        </div>
+        <div class="battlepass-slider">
+            <div class="tiers-track">
+                @foreach (var tier in ViewBag.BattlePassTiers)
+                {
+                    var canClaim = ViewBag.User.TotalPointsEarned >= tier.RequiredPoints;
+                    var userRewards = (List<RecycleRank.Models.UserReward>)ViewBag.UserRewards;
+                    var alreadyClaimed = userRewards.Any(r => r.RewardName == tier.RewardName);
+                    
+                    <div class="tier-card @(canClaim ? "claimable" : "") @(alreadyClaimed ? "claimed" : "")">
+                        <div class="tier-status">
+                            @if (alreadyClaimed)
+                            {
+                                <span>✅</span>
+                            }
+                            else if (canClaim)
+                            {
+                                <span>🎁</span>
+                            }
+                            else
+                            {
+                                <span>🔒</span>
+                            }
+                        </div>
+                        <div class="tier-number">Tier @tier.TierNumber</div>
+                        <div class="tier-icon">@tier.Icon</div>
+                        <div class="tier-reward-name">@tier.RewardName</div>
+                        <div class="tier-reward-description">@tier.RewardDescription</div>
+                        <div class="tier-points">@tier.RequiredPoints pts</div>
+                        
+                        @if (alreadyClaimed)
+                        {
+                            <button class="claim-btn" disabled>Claimed</button>
+                        }
+                        else if (canClaim)
+                        {
+                            <button class="claim-btn claim-button" data-tier-id="@tier.Id" data-tier-name="@tier.RewardName">Claim</button>
+                        }
+                        else
+                        {
+                            <button class="claim-btn" disabled>Locked</button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="scroll-hint">← Scroll horizontally to see all tiers →</div>
+    </div>
+
+    <div class="shop-section">
+        <h2 class="section-title">🛒 Points Shop</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 25px;">Spend your hard-earned points on exclusive items!</p>
+        <div class="shop-grid">
+            @foreach (var item in ViewBag.ShopItems)
+            {
+                var userOwns = ((List<RecycleRank.Models.UserReward>)ViewBag.UserRewards).Any(r => r.RewardName == item.Name);
+                var canAfford = ViewBag.User.Points >= item.Cost;
+                
+                <div class="shop-item">
+                    <div class="shop-item-icon">@item.Icon</div>
+                    <div class="shop-item-name">@item.Name</div>
+                    <div class="shop-item-description">@item.Description</div>
+                    <div class="shop-item-cost">@item.Cost Points</div>
+                    
+                    @if (userOwns)
+                    {
+                        <div class="owned-badge">✅ Owned</div>
+                        <button class="purchase-btn" disabled>Already Owned</button>
+                    }
+                    else if (canAfford)
+                    {
+                        <button class="purchase-btn" onclick="purchaseItem(@item.Id)">Purchase</button>
+                    }
+                    else
+                    {
+                        <button class="purchase-btn" disabled>Not Enough Points</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleRankSystem() {
+    const panel = document.getElementById('rankSystemPanel');
+    const button = document.querySelector('.rank-toggle-btn');
+    
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        button.textContent = '📊 Hide Rank System';
+    } else {
+        panel.style.display = 'none';
+        button.textContent = '📊 How Points & Ranks Work';
+    }
+}
+
+function purchaseItem(itemId) {
+    console.log('purchaseItem called with itemId:', itemId);
+    
+    if (confirm('Are you sure you want to purchase this item?')) {
+        fetch('/BattlePass/PurchaseShopItem', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({ ItemId: itemId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Purchase response:', data);
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Refresh to show updated points and owned items
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while purchasing the item.');
+        });
+    }
+}
+
+function equipReward(rewardId) {
+    console.log('equipReward called with rewardId:', rewardId);
+    
+    fetch('/BattlePass/EquipReward', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: JSON.stringify({ RewardId: rewardId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Equip response:', data);
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while equipping the reward.');
+    });
+}
+
+// Add event listeners when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click listeners to all claim buttons
+    document.querySelectorAll('.claim-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const tierId = parseInt(this.getAttribute('data-tier-id'));
+            const tierName = this.getAttribute('data-tier-name');
+            
+            console.log('Claim button clicked - tierId:', tierId, 'tierName:', tierName);
+            console.log('tierId type:', typeof tierId);
+            
+            if (!tierId || tierId === 0) {
+                console.error('Invalid tierId:', tierId);
+                alert('Error: Invalid tier ID');
+                return;
+            }
+            
+            // Show confirmation
+            const confirmed = confirm(`Are you sure you want to claim "${tierName}"?`);
+            if (!confirmed) return;
+            
+            console.log('Proceeding with claim for tierId:', tierId);
+            
+            fetch('/BattlePass/ClaimReward', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({ tierId: tierId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from server:', data);
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while claiming the reward.');
+            });
+        });
+    });
+});
+
+function claimReward(tierId) {
+    console.log('claimReward called with tierId:', tierId);
+    console.log('tierId type:', typeof tierId);
+    
+    // If tierId is 0 or undefined, try to get it from the clicked button
+    if (!tierId || tierId === 0) {
+        console.log('tierId is 0 or undefined, trying to get from event...');
+        // This won't work in onclick, but let's try a different approach
+        return;
+    }
+    
+    // Show custom confirmation modal
+    const confirmed = confirm('Are you sure you want to claim this reward?');
+    if (!confirmed) return;
+    
+    console.log('Proceeding with claim for tierId:', tierId);
+    
+    fetch('/BattlePass/ClaimReward', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: JSON.stringify({ tierId: tierId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while claiming the reward.');
+    });
+}
+</script>

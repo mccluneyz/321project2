@@ -66,10 +66,75 @@ namespace RecycleRank.Data
                 Password = "admin123",
                 Name = "Test Admin",
                 Points = 1000,
-                Rank = RankLevel.Diamond,
+                TotalPointsEarned = 1000,
+                Rank = RankLevel.Organic,
                 IsAdmin = true
             };
             context.Users.Add(testAdmin);
+
+            // Seed Battle Pass Tiers (Expanded to 20 tiers)
+            var battlePassTiers = new BattlePassTier[]
+            {
+                new BattlePassTier { TierNumber = 1, RequiredPoints = 25, RewardType = "avatar", RewardName = "Eco Starter", RewardDescription = "Basic recycling avatar", RewardValue = "🌱", IsFree = true, Icon = "🌱" },
+                new BattlePassTier { TierNumber = 2, RequiredPoints = 50, RewardType = "title", RewardName = "Green Thumb", RewardDescription = "Show off your eco-friendly nature", RewardValue = "Green Thumb", IsFree = true, Icon = "🌿" },
+                new BattlePassTier { TierNumber = 3, RequiredPoints = 75, RewardType = "avatar", RewardName = "Recycle Master", RewardDescription = "Advanced recycler avatar", RewardValue = "♻️", IsFree = true, Icon = "♻️" },
+                new BattlePassTier { TierNumber = 4, RequiredPoints = 100, RewardType = "banner", RewardName = "Forest Banner", RewardDescription = "Beautiful forest background", RewardValue = "🌲🌲🌲", IsFree = true, Icon = "🌲" },
+                new BattlePassTier { TierNumber = 5, RequiredPoints = 150, RewardType = "title", RewardName = "Eco Warrior", RewardDescription = "Champion of the environment", RewardValue = "Eco Warrior", IsFree = true, Icon = "⚔️" },
+                new BattlePassTier { TierNumber = 6, RequiredPoints = 200, RewardType = "avatar", RewardName = "Diamond Recycler", RewardDescription = "Elite recycling avatar", RewardValue = "💎", IsFree = true, Icon = "💎" },
+                new BattlePassTier { TierNumber = 7, RequiredPoints = 300, RewardType = "banner", RewardName = "Ocean Banner", RewardDescription = "Calming ocean waves", RewardValue = "🌊🌊🌊", IsFree = true, Icon = "🌊" },
+                new BattlePassTier { TierNumber = 8, RequiredPoints = 400, RewardType = "title", RewardName = "Planet Protector", RewardDescription = "Guardian of Earth", RewardValue = "Planet Protector", IsFree = true, Icon = "🛡️" },
+                new BattlePassTier { TierNumber = 9, RequiredPoints = 500, RewardType = "avatar", RewardName = "Solar Recycler", RewardDescription = "Solar-powered recycling avatar", RewardValue = "☀️", IsFree = true, Icon = "☀️" },
+                new BattlePassTier { TierNumber = 10, RequiredPoints = 600, RewardType = "banner", RewardName = "Mountain Banner", RewardDescription = "Majestic mountain landscape", RewardValue = "🏔️🏔️🏔️", IsFree = true, Icon = "🏔️" },
+                new BattlePassTier { TierNumber = 11, RequiredPoints = 750, RewardType = "title", RewardName = "Eco Legend", RewardDescription = "Legendary environmentalist", RewardValue = "Eco Legend", IsFree = true, Icon = "👑" },
+                new BattlePassTier { TierNumber = 12, RequiredPoints = 900, RewardType = "avatar", RewardName = "Wind Recycler", RewardDescription = "Wind-powered recycling avatar", RewardValue = "💨", IsFree = true, Icon = "💨" },
+                new BattlePassTier { TierNumber = 13, RequiredPoints = 1100, RewardType = "banner", RewardName = "Desert Banner", RewardDescription = "Beautiful desert sunset", RewardValue = "🏜️🏜️🏜️", IsFree = true, Icon = "🏜️" },
+                new BattlePassTier { TierNumber = 14, RequiredPoints = 1300, RewardType = "title", RewardName = "Climate Hero", RewardDescription = "Hero of climate action", RewardValue = "Climate Hero", IsFree = true, Icon = "🦸" },
+                new BattlePassTier { TierNumber = 15, RequiredPoints = 1500, RewardType = "avatar", RewardName = "Rainbow Recycler", RewardDescription = "Colorful recycling avatar", RewardValue = "🌈", IsFree = true, Icon = "🌈" },
+                new BattlePassTier { TierNumber = 16, RequiredPoints = 1800, RewardType = "banner", RewardName = "Arctic Banner", RewardDescription = "Cool arctic landscape", RewardValue = "❄️❄️❄️", IsFree = true, Icon = "❄️" },
+                new BattlePassTier { TierNumber = 17, RequiredPoints = 2100, RewardType = "title", RewardName = "Earth Guardian", RewardDescription = "Ultimate protector of Earth", RewardValue = "Earth Guardian", IsFree = true, Icon = "🌍" },
+                new BattlePassTier { TierNumber = 18, RequiredPoints = 2500, RewardType = "avatar", RewardName = "Cosmic Recycler", RewardDescription = "Space-age recycling avatar", RewardValue = "🚀", IsFree = true, Icon = "🚀" },
+                new BattlePassTier { TierNumber = 19, RequiredPoints = 3000, RewardType = "banner", RewardName = "Galaxy Banner", RewardDescription = "Stunning galaxy background", RewardValue = "🌌🌌🌌", IsFree = true, Icon = "🌌" },
+                new BattlePassTier { TierNumber = 20, RequiredPoints = 5000, RewardType = "title", RewardName = "Recycling God", RewardDescription = "Supreme recycling deity", RewardValue = "Recycling God", IsFree = true, Icon = "⚡" }
+            };
+
+            foreach (var tier in battlePassTiers)
+            {
+                context.BattlePassTiers.Add(tier);
+            }
+
+            // Seed Shop Items
+            var shopItems = new ShopItem[]
+            {
+                new ShopItem { Name = "Golden Avatar", Description = "Shiny golden recycling avatar", Cost = 200, ItemType = "avatar", ItemValue = "✨", Icon = "✨" },
+                new ShopItem { Name = "Rainbow Banner", Description = "Colorful rainbow background", Cost = 300, ItemType = "banner", ItemValue = "🌈🌈🌈", Icon = "🌈" },
+                new ShopItem { Name = "VIP Title", Description = "Exclusive VIP member title", Cost = 500, ItemType = "title", ItemValue = "VIP Member", Icon = "👑" },
+                new ShopItem { Name = "Space Avatar", Description = "Cosmic recycling avatar", Cost = 400, ItemType = "avatar", ItemValue = "🚀", Icon = "🚀" },
+                new ShopItem { Name = "Galaxy Banner", Description = "Stunning galaxy background", Cost = 600, ItemType = "banner", ItemValue = "🌌🌌🌌", Icon = "🌌" },
+                new ShopItem { Name = "Legend Title", Description = "Legendary recycler title", Cost = 800, ItemType = "title", ItemValue = "Legend", Icon = "🏆" },
+                new ShopItem { Name = "Fire Avatar", Description = "Flaming recycling avatar", Cost = 350, ItemType = "avatar", ItemValue = "🔥", Icon = "🔥" },
+                new ShopItem { Name = "Sunset Banner", Description = "Beautiful sunset background", Cost = 450, ItemType = "banner", ItemValue = "🌅🌅🌅", Icon = "🌅" }
+            };
+
+            foreach (var item in shopItems)
+            {
+                context.ShopItems.Add(item);
+            }
+
+            context.Users.Add(testAdmin);
+            context.SaveChanges(); // Save the user first to get the ID
+
+            // Add some sample UserRewards for the test admin
+            var testAdminRewards = new UserReward[]
+            {
+                new UserReward { UserId = testAdmin.Id, RewardType = "title", RewardName = "Eco Legend", RewardValue = "Eco Legend", IsEquipped = true, UnlockedAt = DateTime.Now.AddDays(-1) },
+                new UserReward { UserId = testAdmin.Id, RewardType = "avatar", RewardName = "Eco Starter", RewardValue = "🌱", IsEquipped = true, UnlockedAt = DateTime.Now.AddDays(-2) },
+                new UserReward { UserId = testAdmin.Id, RewardType = "banner", RewardName = "Forest Banner", RewardValue = "🌲🌲🌲", IsEquipped = true, UnlockedAt = DateTime.Now.AddDays(-3) }
+            };
+
+            foreach (var reward in testAdminRewards)
+            {
+                context.UserRewards.Add(reward);
+            }
 
             context.SaveChanges();
         }

@@ -7,178 +7,119 @@
         <div class="col-md-12">
             <!-- Navigation -->
             <div class="page-navigation mb-4">
-                <a href="/Home/Index" class="btn btn-outline-primary">
-                    <span>🏠</span> Home
+                <a href="/Admin/AllRecyclingEvents" class="btn btn-outline-primary">
+                    <span>📊</span> All Events
                 </a>
-                <a href="/Recycling/Index" class="btn btn-outline-success">
-                    <span>♻️</span> Recycling
+                <a href="/Admin/FlaggedEvents" class="btn btn-outline-warning">
+                    <span>🚩</span> Flagged Events
                 </a>
-                <a href="/Leaderboard/Index" class="btn btn-outline-warning">
-                    <span>🏆</span> Leaderboard
+                <a href="/Admin/ManageUsers" class="btn btn-outline-info">
+                    <span>👥</span> Manage Users
+                </a>
+                <a href="/Admin/ManageBins" class="btn btn-outline-success">
+                    <span>🗑️</span> Manage Bins
+                </a>
+                <a href="/Admin/ManageMaterials" class="btn btn-outline-secondary">
+                    <span>♻️</span> Manage Materials
                 </a>
             </div>
+
+            <h1 class="mb-4">👑 Admin Dashboard</h1>
             
-            <h1 class="mb-4">⚙️ Admin Dashboard</h1>
-            
-            <!-- Statistics Cards -->
+            <!-- Success/Error Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Dashboard Stats -->
             <div class="row mb-4">
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-primary text-white shadow">
+                <div class="col-md-3">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="card-title">@ViewBag.TotalUsers</h4>
-                                    <p class="card-text">Total Users</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="fas fa-users fa-2x"></i>
-                                </div>
-                            </div>
+                            <h5 class="card-title">👥 Total Users</h5>
+                            <h2 class="text-primary">@ViewBag.TotalUsers</h2>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-success text-white shadow">
+                <div class="col-md-3">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="card-title">@ViewBag.TotalBins</h4>
-                                    <p class="card-text">Recycling Bins</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="fas fa-trash-alt fa-2x"></i>
-                                </div>
-                            </div>
+                            <h5 class="card-title">📊 Total Events</h5>
+                            <h2 class="text-success">@ViewBag.TotalEvents</h2>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-info text-white shadow">
+                <div class="col-md-3">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="card-title">@ViewBag.TotalMaterials</h4>
-                                    <p class="card-text">Material Types</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="fas fa-boxes fa-2x"></i>
-                                </div>
-                            </div>
+                            <h5 class="card-title">🚩 Flagged Events</h5>
+                            <h2 class="text-warning">@ViewBag.FlaggedEvents</h2>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-warning text-white shadow">
+                <div class="col-md-3">
+                    <div class="card text-center">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="card-title">@ViewBag.TotalRecyclingEvents</h4>
-                                    <p class="card-text">Recycling Events</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="fas fa-recycle fa-2x"></i>
-                                </div>
-                            </div>
+                            <h5 class="card-title">🗑️ Total Bins</h5>
+                            <h2 class="text-info">@ViewBag.TotalBins</h2>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Management Actions -->
-            <div class="row mb-4">
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-trash-alt fa-3x text-success"></i>
-                            </div>
-                            <h5 class="card-title">Manage Bins</h5>
-                            <p class="card-text">Add, edit, or remove recycling bin locations.</p>
-                            <a href="/Admin/ManageBins" class="btn btn-success">Manage Bins</a>
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="/Admin/AllRecyclingEvents" class="btn btn-primary w-100 mb-2">
+                                📊 View All Recycling Events
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/Admin/FlaggedEvents" class="btn btn-warning w-100 mb-2">
+                                🚩 Review Flagged Events
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/Admin/ManageUsers" class="btn btn-info w-100 mb-2">
+                                👥 Manage Users
+                            </a>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-boxes fa-3x text-info"></i>
-                            </div>
-                            <h5 class="card-title">Manage Materials</h5>
-                            <p class="card-text">Configure recyclable materials and point values.</p>
-                            <a href="/Admin/ManageMaterials" class="btn btn-info">Manage Materials</a>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="/Admin/ManageBins" class="btn btn-success w-100 mb-2">
+                                🗑️ Manage Recycling Bins
+                            </a>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-users fa-3x text-primary"></i>
-                            </div>
-                            <h5 class="card-title">Manage Users</h5>
-                            <p class="card-text">View all users and manage admin privileges.</p>
-                            <a href="/Admin/ManageUsers" class="btn btn-primary">Manage Users</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-flag fa-3x text-warning"></i>
-                            </div>
-                            <h5 class="card-title">Flagged Events</h5>
-                            <p class="card-text">Review and moderate flagged recycling events.</p>
-                            <a href="/Admin/FlaggedEvents" class="btn btn-warning">Review Flags</a>
+                        <div class="col-md-6">
+                            <a href="/Admin/ManageMaterials" class="btn btn-secondary w-100 mb-2">
+                                ♻️ Manage Materials
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Activities -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card shadow">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">📊 Recent Recycling Activities</h5>
-                        </div>
-                        <div class="card-body">
-                            @if (ViewBag.RecentEvents != null && ViewBag.RecentEvents.Count > 0)
-                            {
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>User</th>
-                                                <th>Material</th>
-                                                <th>Quantity</th>
-                                                <th>Location</th>
-                                                <th>Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var evt in ViewBag.RecentEvents)
-                                            {
-                                                <tr>
-                                                    <td>@evt.User?.Name</td>
-                                                    <td>@evt.Material</td>
-                                                    <td>@evt.Quantity</td>
-                                                    <td>@evt.Bin?.Name</td>
-                                                    <td>@evt.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No recent recycling activities found.</p>
-                            }
-                        </div>
-                    </div>
-                </div>
+            <!-- Admin Notice -->
+            <div class="alert alert-info mt-4" role="alert">
+                <h6 class="alert-heading">👑 Admin Access</h6>
+                <p class="mb-0">You have full administrative access to manage users, events, bins, and materials. Use the navigation above to access different admin functions.</p>
             </div>
         </div>
     </div>

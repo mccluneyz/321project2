@@ -1,5 +1,6 @@
 using RecycleRank.Data;
 using Microsoft.EntityFrameworkCore;
+using RecycleRank.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ builder.Services.AddControllersWithViews();
 // Add Entity Framework with SQLite
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add custom services
+builder.Services.AddScoped<PointsService>();
 
 // Add session support
 builder.Services.AddDistributedMemoryCache();

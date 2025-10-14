@@ -44,6 +44,25 @@
         font-size: 2rem;
         font-weight: 700;
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .rank-icon {
+        font-size: 1.5rem;
+        margin-right: 5px;
+    }
+    
+    .equipped-title {
+        display: block;
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-top: 5px;
+        font-style: italic;
     }
     
     .profile-email {
@@ -149,12 +168,176 @@
     .rank-gold { background: #FFD700; color: white; }
     .rank-platinum { background: #E5E4E2; color: #333; }
     .rank-diamond { background: #B9F2FF; color: #333; }
+    
+    /* Customization Styles */
+    .equipped-items {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .equipped-items h4 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+    
+    .equipped-display {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .equipped-item {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .equipped-item strong {
+        color: #333;
+        display: block;
+        margin-bottom: 8px;
+    }
+    
+    .equipped-value {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .equipped-value span {
+        font-size: 2rem;
+    }
+    
+    .equipped-value small {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .customization-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .customization-section h5 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+    }
+    
+    .item-card {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 8px;
+        text-align: center;
+        transition: all 0.3s ease;
+        min-height: 90px;
+        max-height: 90px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .item-card:hover {
+        border-color: #28a745;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .item-card.equipped {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    }
+    
+    .item-icon {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+    
+    .item-name {
+        font-size: 0.3rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 1px;
+        line-height: 0.6;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        max-height: 0.6em;
+        text-align: center;
+        white-space: nowrap;
+        width: 100%;
+    }
+    
+    .equipped-indicator {
+        font-size: 0.7rem;
+        color: #28a745;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    
+    .btn-equip {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .btn-equip:hover:not(:disabled) {
+        background: #218838;
+        transform: translateY(-1px);
+    }
+    
+    .btn-equip:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .no-items {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+    
+    .no-items p {
+        margin-bottom: 15px;
+    }
 </style>
 
 <div class="container profile-container">
-    <div class="profile-header">
+    <div class="profile-header" style="@(ViewBag.EquippedBanner != null ? ViewBag.GetBannerStyle(ViewBag.EquippedBanner.RewardValue) : "background: linear-gradient(135deg, #28a745 0%, #007bff 100%)"); background-size: cover; background-position: center; position: relative;">
+        <div style="position: relative; z-index: 2;">
         <div class="profile-avatar" onclick="document.getElementById('profilePictureInput').click()">
-            @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+            @if (ViewBag.EquippedAvatar != null)
+            {
+                <span style="font-size: 4rem;">@ViewBag.EquippedAvatar.RewardValue</span>
+            }
+            else if (!string.IsNullOrEmpty(Model.ProfilePicture))
             {
                 <img src="@Model.ProfilePicture" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             }
@@ -165,13 +348,27 @@
         </div>
         <input type="file" id="profilePictureInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
         
-        <div class="profile-name">@Model.Name</div>
+        <div class="profile-name">
+            @{
+                var rankStyle = ViewBag.GetRankStyle(Model.Rank);
+            }
+            <span class="rank-icon" style="color: @rankStyle.Color; text-shadow: 0 0 10px @rankStyle.GlowColor;">@rankStyle.Icon</span>
+            @Model.Name
+            @if (ViewBag.EquippedTitle != null)
+            {
+                <span class="equipped-title">@ViewBag.EquippedTitle.RewardValue</span>
+            }
+        </div>
         <div class="profile-email">@Model.Email</div>
         
         <div class="profile-stats">
             <div class="stat-card">
+                <div class="stat-value">@Model.TotalPointsEarned</div>
+                <div class="stat-label">Total Points Earned</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-value">@Model.Points</div>
-                <div class="stat-label">Points</div>
+                <div class="stat-label">Available Points</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">@Model.Rank</div>
@@ -181,6 +378,7 @@
                 <div class="stat-value">@Model.Events.Count</div>
                 <div class="stat-label">Recycling Events</div>
             </div>
+        </div>
         </div>
     </div>
     
@@ -194,6 +392,142 @@
             <a href="/Recycling/Index" class="btn btn-outline-success btn-lg">
                 <i class="fas fa-plus"></i> Log New Recycling
             </a>
+        </div>
+    </div>
+    
+    <!-- Profile Customization -->
+    <div class="profile-edit-section">
+        <h3 class="section-title">🎨 Customize Your Profile</h3>
+        
+        <!-- Current Equipped Items -->
+        <div class="equipped-items">
+            <h4>Currently Equipped:</h4>
+            <div class="equipped-display">
+                <div class="equipped-item">
+                    <strong>Avatar:</strong> 
+                    <span class="equipped-value">
+                        @if (ViewBag.EquippedAvatar != null)
+                        {
+                            <span>@ViewBag.EquippedAvatar.RewardValue</span>
+                            <small>@ViewBag.EquippedAvatar.RewardName</small>
+                        }
+                        else
+                        {
+                            <span>👤</span>
+                            <small>Default</small>
+                        }
+                    </span>
+                </div>
+                <div class="equipped-item">
+                    <strong>Banner:</strong> 
+                    <span class="equipped-value">
+                        @if (ViewBag.EquippedBanner != null)
+                        {
+                            <span>@ViewBag.EquippedBanner.RewardValue</span>
+                            <small>@ViewBag.EquippedBanner.RewardName</small>
+                        }
+                        else
+                        {
+                            <span>🌍</span>
+                            <small>Default</small>
+                        }
+                    </span>
+                </div>
+                <div class="equipped-item">
+                    <strong>Title:</strong> 
+                    <span class="equipped-value">
+                        @if (ViewBag.EquippedTitle != null)
+                        {
+                            <span>@ViewBag.EquippedTitle.RewardValue</span>
+                            <small>@ViewBag.EquippedTitle.RewardName</small>
+                        }
+                        else
+                        {
+                            <span>Recycler</span>
+                            <small>Default</small>
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Available Items -->
+        <div class="customization-grid">
+            @{
+                var userRewards = (List<RecycleRank.Models.UserReward>)ViewBag.UserRewards;
+                var avatars = userRewards.Where(r => r.RewardType == "avatar").ToList();
+                var banners = userRewards.Where(r => r.RewardType == "banner").ToList();
+                var titles = userRewards.Where(r => r.RewardType == "title").ToList();
+            }
+            
+            @if (avatars.Any())
+            {
+                <div class="customization-section">
+                    <h5>🖼️ Avatars</h5>
+                    <div class="items-grid">
+                        @foreach (var avatar in avatars)
+                        {
+                            <div class="item-card @(avatar.IsEquipped ? "equipped" : "")" onclick="@(avatar.IsEquipped ? $"unequipReward({avatar.Id})" : $"equipReward({avatar.Id})")">
+                                <div class="item-icon">@avatar.RewardValue</div>
+                                <div class="item-name">@avatar.RewardName</div>
+                                @if (avatar.IsEquipped)
+                                {
+                                    <div class="equipped-indicator">✓ Equipped<br><small>Click to unequip</small></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            
+            @if (banners.Any())
+            {
+                <div class="customization-section">
+                    <h5>🖼️ Banners</h5>
+                    <div class="items-grid">
+                        @foreach (var banner in banners)
+                        {
+                            <div class="item-card @(banner.IsEquipped ? "equipped" : "")" onclick="@(banner.IsEquipped ? $"unequipReward({banner.Id})" : $"equipReward({banner.Id})")">
+                                <div class="item-icon">@banner.RewardValue</div>
+                                <div class="item-name">@banner.RewardName</div>
+                                @if (banner.IsEquipped)
+                                {
+                                    <div class="equipped-indicator">✓ Equipped<br><small>Click to unequip</small></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            
+            @if (titles.Any())
+            {
+                <div class="customization-section">
+                    <h5>🏷️ Titles</h5>
+                    <div class="items-grid">
+                        @foreach (var title in titles)
+                        {
+                            <div class="item-card @(title.IsEquipped ? "equipped" : "")" onclick="@(title.IsEquipped ? $"unequipReward({title.Id})" : $"equipReward({title.Id})")">
+                                <div class="item-icon">@title.RewardValue</div>
+                                <div class="item-name">@title.RewardName</div>
+                                @if (title.IsEquipped)
+                                {
+                                    <div class="equipped-indicator">✓ Equipped<br><small>Click to unequip</small></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            
+            @if (!userRewards.Any())
+            {
+                <div class="no-items">
+                    <p>You haven't unlocked any customization items yet!</p>
+                    <p>Earn points by recycling to unlock avatars, banners, and titles in the Battle Pass!</p>
+                    <a href="/BattlePass/Index" class="btn btn-primary">View Battle Pass</a>
+                </div>
+            }
         </div>
     </div>
     
@@ -244,4 +578,58 @@
             avatar.innerHTML = '<img src="' + url + '" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML=\'👤\'">';
         }
     });
+    
+    function equipReward(rewardId) {
+        console.log('equipReward called with rewardId:', rewardId);
+        
+        fetch('/Profile/EquipReward', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({ RewardId: rewardId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Equip response:', data);
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while equipping the reward.');
+        });
+    }
+
+    function unequipReward(rewardId) {
+        console.log('unequipReward called with rewardId:', rewardId);
+        
+        fetch('/Profile/UnequipReward', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({ RewardId: rewardId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Unequip response:', data);
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while unequipping the reward.');
+        });
+    }
 </script>

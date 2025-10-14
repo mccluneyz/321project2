@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using RecycleRank.Data;
 using RecycleRank.Models;
+using RecycleRank.Services;
 
 namespace RecycleRank.Controllers
 {
     public class RecyclingController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly PointsService _pointsService;
 
-        public RecyclingController(ApplicationDbContext context)
+        public RecyclingController(ApplicationDbContext context, PointsService pointsService)
         {
             _context = context;
+            _pointsService = pointsService;
         }
 
         public IActionResult Index()
@@ -25,7 +28,7 @@ namespace RecycleRank.Controllers
         }
 
         [HttpPost]
-        public IActionResult LogRecycling(int binId, string material, int quantity)
+        public async Task<IActionResult> LogRecycling(int binId, string material, int quantity)
         {
             // Get current user from session
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -43,10 +46,19 @@ namespace RecycleRank.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Calculate points earned
-            int pointsEarned = quantity * materialRecord.PointsPerUnit;
+            // Get user to calculate points with rank multiplier
+            var user = _context.Users.Find(userId.Value);
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction("Index");
+            }
 
-            // Create a simple recycling event
+            // Calculate points earned with rank multiplier
+            var oldRank = user.Rank;
+            int pointsEarned = _pointsService.CalculatePoints(user, materialRecord, quantity);
+
+            // Create recycling event
             var recyclingEvent = new RecyclingEvent
             {
                 UserId = userId.Value,
@@ -59,19 +71,24 @@ namespace RecycleRank.Controllers
             // Add recycling event to database
             _context.RecyclingEvents.Add(recyclingEvent);
 
-            // Update user's points
-            var user = _context.Users.Find(userId.Value);
-            if (user != null)
+            // Award points (this will also check for rank promotion)
+            await _pointsService.AwardPointsAsync(userId.Value, pointsEarned);
+            
+            // Refresh user from database to get updated rank
+            _context.Entry(user).Reload();
+            
+            // Update session with new points and rank
+            HttpContext.Session.SetInt32("UserPoints", user.Points);
+            HttpContext.Session.SetString("UserRank", user.Rank.ToString());
+
+            // Check if user was promoted
+            string promotionMessage = "";
+            if (oldRank != user.Rank)
             {
-                user.Points += pointsEarned;
-                
-                // Update session with new points total
-                HttpContext.Session.SetInt32("UserPoints", user.Points);
+                promotionMessage = $" 🎉 CONGRATULATIONS! You've been promoted to {user.Rank} rank!";
             }
 
-            _context.SaveChanges();
-            
-            TempData["Success"] = $"Successfully logged {quantity} {material} item(s) and earned {pointsEarned} points! Total points: {user?.Points}";
+            TempData["Success"] = $"Successfully logged {quantity} {material} item(s) and earned {pointsEarned} points! Total points: {user.Points}{promotionMessage}";
             return RedirectToAction("Index");
         }
 

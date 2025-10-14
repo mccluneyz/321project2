@@ -1,0 +1,463 @@
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<style>
+    .settings-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .settings-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .settings-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+    
+    .setting-info {
+        flex: 1;
+    }
+    
+    .setting-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .setting-description {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 60px;
+        height: 30px;
+        background: #ccc;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+    
+    .toggle-switch.active {
+        background: #007bff;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .toggle-switch.active .toggle-slider {
+        transform: translateX(30px);
+    }
+    
+    .user-info {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .user-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #007bff;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 2px;
+    }
+    
+    .coming-soon {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .coming-soon .toggle-switch {
+        background: #ddd;
+    }
+</style>
+
+<div class="settings-container">
+    <div class="settings-section">
+        <h1 class="settings-title">
+            ⚙️ Settings
+        </h1>
+        
+        <div class="user-info">
+            <h4>👤 Account Information</h4>
+            <p><strong>Name:</strong> @ViewBag.User.Name</p>
+            <p><strong>Email:</strong> @ViewBag.User.Email</p>
+            <p><strong>Rank:</strong> @ViewBag.User.Rank</p>
+            
+            <div class="user-stats">
+                <div class="stat-item">
+                    <div class="stat-value">@ViewBag.User.TotalPointsEarned</div>
+                    <div class="stat-label">Total Points Earned</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">@ViewBag.User.Points</div>
+                    <div class="stat-label">Available Points</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">@ViewBag.User.Rank</div>
+                    <div class="stat-label">Current Rank</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h2 class="settings-title">
+            🌙 Appearance
+        </h2>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Dark Mode</div>
+                <div class="setting-description">Switch to dark theme for better night viewing</div>
+            </div>
+            <div class="toggle-switch" id="darkModeToggle" onclick="toggleDarkMode()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Compact View</div>
+                <div class="setting-description">Reduce spacing for more content on screen</div>
+            </div>
+            <div class="toggle-switch" id="compactToggle" onclick="toggleCompact()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Animations</div>
+                <div class="setting-description">Enable smooth transitions and effects</div>
+            </div>
+            <div class="toggle-switch active" id="animationsToggle" onclick="toggleAnimations()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h2 class="settings-title">
+            🔔 Notifications
+        </h2>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Email Notifications</div>
+                <div class="setting-description">Get updates about your recycling progress</div>
+            </div>
+            <div class="toggle-switch coming-soon" id="emailToggle">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Rank Up Alerts</div>
+                <div class="setting-description">Notify when you advance to next rank</div>
+            </div>
+            <div class="toggle-switch active" id="rankAlertsToggle" onclick="toggleRankAlerts()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Battle Pass Reminders</div>
+                <div class="setting-description">Remind about unclaimed rewards</div>
+            </div>
+            <div class="toggle-switch active" id="battlePassToggle" onclick="toggleBattlePass()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h2 class="settings-title">
+            🎮 Gameplay
+        </h2>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Sound Effects</div>
+                <div class="setting-description">Play sounds for actions and achievements</div>
+            </div>
+            <div class="toggle-switch coming-soon" id="soundToggle">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Auto-Equip Rewards</div>
+                <div class="setting-description">Automatically equip new rewards when claimed</div>
+            </div>
+            <div class="toggle-switch" id="autoEquipToggle" onclick="toggleAutoEquip()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-name">Show Point Animations</div>
+                <div class="setting-description">Display point gain animations</div>
+            </div>
+            <div class="toggle-switch active" id="pointAnimationsToggle" onclick="togglePointAnimations()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load saved settings
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSettings();
+    });
+
+    function loadSettings() {
+        // Load dark mode
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+            document.getElementById('darkModeToggle').classList.add('active');
+            document.body.classList.add('dark-mode');
+        }
+
+        // Load other settings
+        const compact = localStorage.getItem('compactMode') === 'true';
+        if (compact) {
+            document.getElementById('compactToggle').classList.add('active');
+            document.body.classList.add('compact-mode');
+        }
+
+        const animations = localStorage.getItem('animations') !== 'false';
+        if (!animations) {
+            document.getElementById('animationsToggle').classList.remove('active');
+        }
+
+        const rankAlerts = localStorage.getItem('rankAlerts') !== 'false';
+        if (!rankAlerts) {
+            document.getElementById('rankAlertsToggle').classList.remove('active');
+        }
+
+        const battlePass = localStorage.getItem('battlePassAlerts') !== 'false';
+        if (!battlePass) {
+            document.getElementById('battlePassToggle').classList.remove('active');
+        }
+
+        const autoEquip = localStorage.getItem('autoEquip') === 'true';
+        if (autoEquip) {
+            document.getElementById('autoEquipToggle').classList.add('active');
+        }
+
+        const pointAnimations = localStorage.getItem('pointAnimations') !== 'false';
+        if (!pointAnimations) {
+            document.getElementById('pointAnimationsToggle').classList.remove('active');
+        }
+    }
+
+    function toggleDarkMode() {
+        const toggle = document.getElementById('darkModeToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('darkMode', 'false');
+        } else {
+            toggle.classList.add('active');
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('darkMode', 'true');
+        }
+    }
+
+    function toggleCompact() {
+        const toggle = document.getElementById('compactToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            document.body.classList.remove('compact-mode');
+            localStorage.setItem('compactMode', 'false');
+        } else {
+            toggle.classList.add('active');
+            document.body.classList.add('compact-mode');
+            localStorage.setItem('compactMode', 'true');
+        }
+    }
+
+    function toggleAnimations() {
+        const toggle = document.getElementById('animationsToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            localStorage.setItem('animations', 'false');
+        } else {
+            toggle.classList.add('active');
+            localStorage.setItem('animations', 'true');
+        }
+    }
+
+    function toggleRankAlerts() {
+        const toggle = document.getElementById('rankAlertsToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            localStorage.setItem('rankAlerts', 'false');
+        } else {
+            toggle.classList.add('active');
+            localStorage.setItem('rankAlerts', 'true');
+        }
+    }
+
+    function toggleBattlePass() {
+        const toggle = document.getElementById('battlePassToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            localStorage.setItem('battlePassAlerts', 'false');
+        } else {
+            toggle.classList.add('active');
+            localStorage.setItem('battlePassAlerts', 'true');
+        }
+    }
+
+    function toggleAutoEquip() {
+        const toggle = document.getElementById('autoEquipToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            localStorage.setItem('autoEquip', 'false');
+        } else {
+            toggle.classList.add('active');
+            localStorage.setItem('autoEquip', 'true');
+        }
+    }
+
+    function togglePointAnimations() {
+        const toggle = document.getElementById('pointAnimationsToggle');
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            toggle.classList.remove('active');
+            localStorage.setItem('pointAnimations', 'false');
+        } else {
+            toggle.classList.add('active');
+            localStorage.setItem('pointAnimations', 'true');
+        }
+    }
+</script>
+
+<style>
+    /* Dark Mode Styles */
+    .dark-mode {
+        background-color: #1a1a1a !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .dark-mode .settings-section {
+        background: #2d2d2d !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .dark-mode .settings-title {
+        color: #e0e0e0 !important;
+    }
+    
+    .dark-mode .setting-name {
+        color: #e0e0e0 !important;
+    }
+    
+    .dark-mode .setting-description {
+        color: #b0b0b0 !important;
+    }
+    
+    .dark-mode .user-info {
+        background: linear-gradient(135deg, #3d3d3d 0%, #2d2d2d 100%) !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .dark-mode .stat-item {
+        background: #3d3d3d !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .dark-mode .setting-item {
+        border-bottom-color: #404040 !important;
+    }
+    
+    /* Compact Mode Styles */
+    .compact-mode .settings-section {
+        padding: 15px !important;
+    }
+    
+    .compact-mode .setting-item {
+        padding: 10px 0 !important;
+    }
+    
+    .compact-mode .settings-title {
+        font-size: 1.3rem !important;
+        margin-bottom: 15px !important;
+    }
+</style>
