@@ -1,0 +1,92 @@
+{
+"type": "FeatureCollection",
+"name": "UA Campus Key Landmarks and Boundary",
+"crs": {
+"type": "name",
+"properties": {
+"name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+}
+},
+"features": [
+{
+"type": "Feature",
+"properties": {
+"name": "The Quad (Campus Center)",
+"type": "Landmark",
+"description": "The historical and geographical heart of the campus, featuring Denny Chimes."
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+-87.5487,
+33.2119
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Bryant-Denny Stadium",
+"type": "Athletics",
+"description": "Home of the Crimson Tide Football team."
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+-87.5501,
+33.2084
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Gorgas Library",
+"type": "Academic",
+"description": "The main library on campus."
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+-87.5473,
+33.2132
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Main Campus Area Boundary (Approximate)",
+"type": "Boundary",
+"description": "A very rough polygon outlining the central campus block."
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+-87.5540,
+33.2160
+],
+[
+-87.5400,
+33.2160
+],
+[
+-87.5400,
+33.2070
+],
+[
+-87.5540,
+33.2070
+],
+[
+-87.5540,
+33.2160
+]
+]
+]
+}
+}
+]
+}

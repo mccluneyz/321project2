@@ -19,6 +19,12 @@
                 <button class="icon-btn" onclick="window.location.href='/BattlePass/Index'" title="Battle Pass">
                     🎮
                 </button>
+                @if (Context.Session.GetString("IsAdmin") == "True")
+                {
+                    <button class="icon-btn" onclick="window.location.href='/Admin/Index'" title="Admin">
+                        ⚙️
+                    </button>
+                }
                 @if (Context.Session.GetInt32("UserId") != null)
                 {
                     <button class="icon-btn" onclick="window.location.href='/Account/Logout'" title="Logout">

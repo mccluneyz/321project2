@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Manage Bins";
+    var bins = ViewBag.Bins as List<RecycleRank.Models.Bin> ?? Model as List<RecycleRank.Models.Bin>;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Navigation -->
+            <div class="page-navigation mb-4">
+                <a href="/Admin/Index" class="btn btn-outline-secondary">
+                    <span>⚙️</span> Admin Dashboard
+                </a>
+                <a href="/Home/Index" class="btn btn-outline-primary">
+                    <span>🏠</span> Home
+                </a>
+            </div>
+
+            <!-- Success/Error Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">🗑️ Manage Recycling Bins</h1>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBinModal">
+                    <i class="fas fa-plus"></i> Add New Bin
+                </button>
+            </div>
+
+            <!-- Bins List -->
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Current Recycling Bins</h5>
+                </div>
+                <div class="card-body">
+                    @if (bins != null && bins.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Address</th>
+                                        <th>Coordinates</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var bin in bins)
+                                    {
+                                        <tr>
+                                            <td>@bin.Id</td>
+                                            <td>@bin.Name</td>
+                                            <td>@bin.Address</td>
+                                            <td>@bin.Latitude, @bin.Longitude</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editBinModal" onclick="loadBinData(@bin.Id, '@bin.Name', '@bin.Address', @bin.Latitude, @bin.Longitude)">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <form action="/Admin/DeleteBin" method="post" style="display: inline;">
+                                                    <input type="hidden" name="binId" value="@bin.Id">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete the bin &quot;@bin.Name&quot;?')">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-trash-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No recycling bins found</h5>
+                            <p class="text-muted">Add your first recycling bin to get started!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bin Modal -->
+<div class="modal fade" id="addBinModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Recycling Bin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/Admin/CreateBin" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Bin Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="address" name="address" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="latitude" class="form-label">Latitude</label>
+                                <input type="number" step="any" class="form-control" id="latitude" name="latitude" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="longitude" class="form-label">Longitude</label>
+                                <input type="number" step="any" class="form-control" id="longitude" name="longitude" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Bin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Bin Modal -->
+<div class="modal fade" id="editBinModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Recycling Bin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/Admin/UpdateBin" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="editBinId" name="binId">
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Bin Name</label>
+                        <input type="text" class="form-control" id="editName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editAddress" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="editAddress" name="address" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editLatitude" class="form-label">Latitude</label>
+                                <input type="number" step="any" class="form-control" id="editLatitude" name="latitude" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editLongitude" class="form-label">Longitude</label>
+                                <input type="number" step="any" class="form-control" id="editLongitude" name="longitude" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Update Bin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadBinData(id, name, address, latitude, longitude) {
+    document.getElementById('editBinId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editAddress').value = address;
+    document.getElementById('editLatitude').value = latitude;
+    document.getElementById('editLongitude').value = longitude;
+}
+</script>
