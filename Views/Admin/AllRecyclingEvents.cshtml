@@ -1,0 +1,183 @@
+@{
+    ViewData["Title"] = "All Recycling Events";
+    var events = ViewBag.Events as List<RecycleRank.Models.RecyclingEvent> ?? Model as List<RecycleRank.Models.RecyclingEvent>;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Navigation -->
+            <div class="page-navigation mb-4">
+                <a href="/Admin/FlaggedEvents" class="btn btn-outline-warning">
+                    <span>🚩</span> Flagged Events
+                </a>
+                <a href="/Admin/Index" class="btn btn-outline-secondary">
+                    <span>⚙️</span> Admin Dashboard
+                </a>
+            </div>
+
+            <!-- Success/Error Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">📊 All Recycling Events</h1>
+                <span class="badge bg-primary fs-6">Total Events: @events.Count</span>
+            </div>
+
+            <!-- Events List -->
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Complete Recycling History</h5>
+                </div>
+                <div class="card-body">
+                    @if (events != null && events.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Event ID</th>
+                                        <th>User</th>
+                                        <th>Material</th>
+                                        <th>Quantity</th>
+                                        <th>Points Earned</th>
+                                        <th>Location</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var evt in events)
+                                    {
+                                        <tr>
+                                            <td>@evt.Id</td>
+                                            <td>
+                                                @evt.User?.Name
+                                                @if (evt.User?.IsAdmin == true)
+                                                {
+                                                    <span class="badge bg-danger ms-1">Admin</span>
+                                                }
+                                            </td>
+                                            <td>@evt.Material</td>
+                                            <td>@evt.Quantity</td>
+                                            <td>
+                                                @{
+                                                    var materials = ViewBag.Materials as List<RecycleRank.Models.Material>;
+                                                    var material = materials?.FirstOrDefault(m => m.Name == evt.Material);
+                                                    var pointsEarned = material?.PointsPerUnit * evt.Quantity ?? 0;
+                                                }
+                                                <span class="badge bg-success">@pointsEarned pts</span>
+                                            </td>
+                                            <td>@evt.Bin?.Name</td>
+                                            <td>@evt.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td>
+                                                @{
+                                                    var isFlagged = ViewBag.FlaggedEventIds?.Contains(evt.Id) == true;
+                                                }
+                                                @if (isFlagged)
+                                                {
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-flag"></i> Flagged
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check"></i> Approved
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!isFlagged)
+                                                {
+                                                    <form action="/Admin/FlagEvent" method="post" style="display: inline;">
+                                                        <input type="hidden" name="eventId" value="@evt.Id">
+                                                        <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Flag this recycling event for review?')">
+                                                            <i class="fas fa-flag"></i> Flag
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <form action="/Admin/UnflagEvent" method="post" style="display: inline;">
+                                                        <input type="hidden" name="eventId" value="@evt.Id">
+                                                        <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Remove flag from this event?')">
+                                                            <i class="fas fa-flag"></i> Unflag
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-recycle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No recycling events found</h5>
+                            <p class="text-muted">Users haven't logged any recycling activities yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">📈 Event Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (events != null && events.Any())
+                            {
+                                var flaggedCount = ViewBag.FlaggedEventIds?.Count ?? 0;
+                                var approvedCount = events.Count - flaggedCount;
+                                <p><strong>Total Events:</strong> @events.Count</p>
+                                <p><strong>Approved:</strong> @approvedCount</p>
+                                <p><strong>Flagged:</strong> @flaggedCount</p>
+                                <p><strong>Flag Rate:</strong> @(events.Count > 0 ? (flaggedCount * 100.0 / events.Count).ToString("F1") : "0")%</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No statistics available.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">⚠️ Flagging Guidelines</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Flag events with unusually high quantities</li>
+                                <li>Flag events from new users with suspicious patterns</li>
+                                <li>Flag events with impossible timing (multiple events in seconds)</li>
+                                <li>Use discretion - false flags can hurt user experience</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

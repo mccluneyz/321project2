@@ -1,0 +1,198 @@
+@{
+    ViewData["Title"] = "Manage Users";
+    var users = ViewBag.Users as List<RecycleRank.Models.User> ?? Model as List<RecycleRank.Models.User>;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Navigation -->
+            <div class="page-navigation mb-4">
+                <a href="/Admin/Index" class="btn btn-outline-secondary">
+                    <span>⚙️</span> Admin Dashboard
+                </a>
+                <a href="/Home/Index" class="btn btn-outline-primary">
+                    <span>🏠</span> Home
+                </a>
+            </div>
+
+            <!-- Success/Error Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">👥 Manage Users</h1>
+                <div>
+                    <span class="badge bg-primary fs-6">Total Users: @users.Count</span>
+                    <span class="badge bg-warning fs-6">Admins: @users.Count(u => u.IsAdmin)</span>
+                </div>
+            </div>
+
+            <!-- Users List -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">All Users</h5>
+                </div>
+                <div class="card-body">
+                    @if (users != null && users.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Points</th>
+                                        <th>Rank</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in users)
+                                    {
+                                        <tr>
+                                            <td>@user.Id</td>
+                                            <td>
+                                                @user.Name
+                                                @{
+                                                    var currentUserId = ViewBag.CurrentUserId ?? 0;
+                                                }
+                                                @if (user.Id == currentUserId)
+                                                {
+                                                    <span class="badge bg-info">You</span>
+                                                }
+                                            </td>
+                                            <td>@user.Email</td>
+                                            <td>
+                                                <span class="badge bg-success">@user.Points points</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@user.Rank</span>
+                                            </td>
+                                            <td>
+                                                @if (user.IsAdmin)
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-crown"></i> Admin
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark">
+                                                        <i class="fas fa-user"></i> User
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.Id != currentUserId)
+                                                {
+                                                    <form action="/Admin/ToggleAdminStatus" method="post" style="display: inline;">
+                                                        <input type="hidden" name="userId" value="@user.Id">
+                                                        <button type="submit" class="btn btn-sm @(user.IsAdmin ? "btn-warning" : "btn-success")" 
+                                                                onclick="return confirm('Are you sure you want to @(user.IsAdmin ? "remove admin privileges from" : "grant admin privileges to") @user.Name?')">
+                                                            <i class="fas @(user.IsAdmin ? "fa-user-minus" : "fa-user-plus")"></i>
+                                                            @(user.IsAdmin ? "Remove Admin" : "Make Admin")
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Current User</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No users found</h5>
+                            <p class="text-muted">Users will appear here once they register.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- User Statistics -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">📊 User Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (users != null && users.Any())
+                            {
+                                <p><strong>Total Users:</strong> @users.Count</p>
+                                <p><strong>Admins:</strong> @users.Count(u => u.IsAdmin)</p>
+                                <p><strong>Regular Users:</strong> @users.Count(u => !u.IsAdmin)</p>
+                                <p><strong>Average Points:</strong> @users.Average(u => u.Points).ToString("F0")</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No statistics available.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">🏆 Top Users</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (users != null && users.Any())
+                            {
+                                var topUsers = users.OrderByDescending(u => u.Points).Take(3);
+                                @foreach (var user in topUsers)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>@user.Name</span>
+                                        <span class="badge bg-success">@user.Points pts</span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No users to rank.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">⚠️ Admin Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Be careful when granting admin privileges</li>
+                                <li>Only trusted users should be admins</li>
+                                <li>Admins can manage all system settings</li>
+                                <li>You cannot remove your own admin status</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

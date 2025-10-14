@@ -16,9 +16,12 @@
                 <button class="icon-btn" onclick="window.location.href='/Recycling/Index'" title="Recycle">
                     ♻️
                 </button>
-                <button class="icon-btn" onclick="window.location.href='/Admin/Index'" title="Admin">
-                    ⚙️
-                </button>
+                @if (Context.Session.GetString("IsAdmin") == "True")
+                {
+                    <button class="icon-btn" onclick="window.location.href='/Admin/Index'" title="Admin">
+                        ⚙️
+                    </button>
+                }
                 @if (Context.Session.GetInt32("UserId") != null)
                 {
                     <button class="icon-btn profile-btn" onclick="window.location.href='/Profile/Index'" title="Profile">

@@ -8,6 +8,7 @@ namespace RecycleRank.Models
         public string Material { get; set; } = "";
         public int Quantity { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsFlagged { get; set; } = false;
 
         public User? User { get; set; }
         public Bin? Bin { get; set; }
