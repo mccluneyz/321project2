@@ -1,43 +1,234 @@
+@model RecycleRank.Models.User
+
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "My Profile";
 }
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <h1 class="mb-4">👤 Your Profile</h1>
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0">Stats Overview</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-6">
-                                    <h3 class="text-success">0</h3>
-                                    <p class="text-muted">Total Points</p>
-                                </div>
-                                <div class="col-6">
-                                    <h3 class="text-info">Bronze</h3>
-                                    <p class="text-muted">Current Rank</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">Recent Activity</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted">No recent recycling activity.</p>
-                            <a asp-controller="Recycling" asp-action="Index" class="btn btn-success btn-sm">Start Recycling</a>
-                        </div>
-                    </div>
-                </div>
+<style>
+    .profile-container {
+        margin-top: 100px;
+        padding: 20px;
+    }
+    
+    .profile-header {
+        background: linear-gradient(135deg, #28a745 0%, #007bff 100%);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        margin: 0 auto 20px;
+        border: 5px solid white;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+    
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .profile-email {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .profile-stats {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .stat-card {
+        background: rgba(255,255,255,0.15);
+        padding: 20px 30px;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .profile-edit-section {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #28a745;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        outline: none;
+    }
+    
+    .btn-save {
+        background: #28a745;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .rank-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+    
+    .rank-bronze { background: #CD7F32; color: white; }
+    .rank-silver { background: #C0C0C0; color: white; }
+    .rank-gold { background: #FFD700; color: white; }
+    .rank-platinum { background: #E5E4E2; color: #333; }
+    .rank-diamond { background: #B9F2FF; color: #333; }
+</style>
+
+<div class="container profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar" onclick="document.getElementById('profilePictureInput').click()">
+            @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+            {
+                <img src="@Model.ProfilePicture" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            }
+            else
+            {
+                <span>👤</span>
+            }
+        </div>
+        <input type="file" id="profilePictureInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+        
+        <div class="profile-name">@Model.Name</div>
+        <div class="profile-email">@Model.Email</div>
+        
+        <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-value">@Model.Points</div>
+                <div class="stat-label">Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@Model.Rank</div>
+                <div class="stat-label">Rank</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@Model.Events.Count</div>
+                <div class="stat-label">Recycling Events</div>
             </div>
         </div>
     </div>
+    
+    <div class="profile-edit-section">
+        <h3 class="section-title">✏️ Edit Profile</h3>
+        
+        <form asp-action="UpdateProfile" method="post">
+            <input type="hidden" id="profilePictureUrl" name="profilePicture" value="@Model.ProfilePicture">
+            
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="@Model.Name" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Profile Picture URL</label>
+                <input type="text" class="form-control" id="profilePictureUrlInput" placeholder="Enter image URL" value="@Model.ProfilePicture">
+                <small class="text-muted">Enter a URL to an image for your profile picture</small>
+            </div>
+            
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </form>
+    </div>
 </div>
+
+<script>
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profilePictureUrl').value = e.target.result;
+                document.getElementById('profilePictureUrlInput').value = e.target.result;
+                document.querySelector('.profile-avatar').innerHTML = '<img src="' + e.target.result + '" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    // Update profile picture URL when typing
+    document.getElementById('profilePictureUrlInput').addEventListener('input', function() {
+        const url = this.value;
+        document.getElementById('profilePictureUrl').value = url;
+        if (url) {
+            const avatar = document.querySelector('.profile-avatar');
+            avatar.innerHTML = '<img src="' + url + '" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML=\'👤\'">';
+        }
+    });
+</script>

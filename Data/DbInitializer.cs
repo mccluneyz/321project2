@@ -59,6 +59,18 @@ namespace RecycleRank.Data
                 context.Bins.Add(bin);
             }
 
+            // Add a test admin user
+            var testAdmin = new User
+            {
+                Email = "admin@test.com",
+                Password = "admin123",
+                Name = "Test Admin",
+                Points = 1000,
+                Rank = RankLevel.Diamond,
+                IsAdmin = true
+            };
+            context.Users.Add(testAdmin);
+
             context.SaveChanges();
         }
     }
