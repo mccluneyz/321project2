@@ -146,6 +146,13 @@
                 </div>
                 
                 <div class="auth-form-container">
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 20px;">
+                        <strong>Test Admin Account:</strong><br>
+                        Email: <code>admin@test.com</code><br>
+                        Password: <code>admin123</code><br>
+                        <small>This account has admin privileges and Diamond rank for testing.</small>
+                    </div>
+                    
                     <!-- Sign In Form -->
                     <form class="auth-form active" asp-controller="Account" asp-action="Login" method="post" id="signInForm">
                         @if (ViewBag.Error != null)
@@ -178,7 +185,7 @@
                     </form>
                     
                     <!-- Sign Up Form -->
-                    <form class="auth-form" asp-controller="Account" asp-action="Register" method="post" id="signUpForm">
+                    <form class="auth-form" action="/Account/Register" method="post" id="signUpForm">
                         @if (ViewBag.Error != null)
                         {
                             <div class="alert alert-danger" role="alert">
