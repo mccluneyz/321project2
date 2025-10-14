@@ -324,6 +324,8 @@ MigrationBackup/
 
 # Custom additions
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 appsettings.Development.json
