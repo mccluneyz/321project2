@@ -22,16 +22,33 @@
             </div>
             
             <h1 class="mb-4">♻️ Log Your Recycling</h1>
+            
+            <!-- Success/Error Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">Record Your Recycling Activity</h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="LogRecycling" method="post">
+                    <form action="/Recycling/LogRecycling" method="post">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="binId" class="form-label">Recycling Bin Location</label>
-                                <select class="form-select" id="binId" name="BinId" required>
+                                <select class="form-select" id="binId" name="binId" required>
                                     <option value="">Select a bin location...</option>
                                     @foreach (var bin in ViewBag.Bins)
                                     {
@@ -41,7 +58,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="material" class="form-label">Material Type</label>
-                                <select class="form-select" id="material" name="Material" required>
+                                <select class="form-select" id="material" name="material" required>
                                     <option value="">Select material...</option>
                                     @foreach (var material in ViewBag.Materials)
                                     {
@@ -52,10 +69,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="quantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
                         </div>
-                        <div class="d-grid">
+                        <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success btn-lg">Log Recycling Activity</button>
+                            <a href="/Profile/History" class="btn btn-outline-info">
+                                <i class="fas fa-history"></i> View My Recycling History
+                            </a>
                         </div>
                     </form>
                 </div>

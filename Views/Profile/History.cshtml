@@ -1,0 +1,263 @@
+@{
+    ViewData["Title"] = "My Recycling History";
+    var user = ViewBag.User as RecycleRank.Models.User;
+    var events = ViewBag.Events as List<RecycleRank.Models.RecyclingEvent>;
+}
+
+<style>
+    .history-container {
+        margin-top: 100px;
+        padding: 20px;
+    }
+    
+    .history-header {
+        background: linear-gradient(135deg, #28a745 0%, #007bff 100%);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .history-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .history-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .stats-row {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        background: rgba(255,255,255,0.15);
+        padding: 20px 30px;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        text-align: center;
+        min-width: 120px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .events-section {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #28a745;
+    }
+    
+    .event-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        border-left: 5px solid #28a745;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .event-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .event-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .event-material {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+    
+    .event-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .event-details {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .event-detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .event-detail-icon {
+        font-size: 1.2rem;
+    }
+    
+    .event-detail-text {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state-text {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+    
+    .btn-log-recycling {
+        background: #28a745;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-log-recycling:hover {
+        background: #218838;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .navigation-buttons {
+        margin-bottom: 30px;
+    }
+    
+    .navigation-buttons a {
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container history-container">
+    <!-- Header -->
+    <div class="history-header">
+        <div class="history-title">♻️ My Recycling History</div>
+        <div class="history-subtitle">Track your environmental impact</div>
+        
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value">@events.Count</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@events.Sum(e => e.Quantity)</div>
+                <div class="stat-label">Items Recycled</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@user.Points</div>
+                <div class="stat-label">Total Points</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="navigation-buttons">
+        <a href="/Profile/Index" class="btn btn-outline-primary">
+            <i class="fas fa-user"></i> Back to Profile
+        </a>
+        <a href="/Recycling/Index" class="btn btn-outline-success">
+            <i class="fas fa-plus"></i> Log New Recycling
+        </a>
+        <a href="/Home/Index" class="btn btn-outline-secondary">
+            <i class="fas fa-home"></i> Home
+        </a>
+    </div>
+    
+    <!-- Events Section -->
+    <div class="events-section">
+        <h3 class="section-title">
+            <i class="fas fa-history"></i> Recent Recycling Activities
+        </h3>
+        
+        @if (events.Any())
+        {
+            @foreach (var recyclingEvent in events)
+            {
+                <div class="event-card">
+                    <div class="event-header">
+                        <div class="event-material">@recyclingEvent.Material</div>
+                        <div class="event-date">@recyclingEvent.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-detail">
+                            <span class="event-detail-icon">📦</span>
+                            <span class="event-detail-text">@recyclingEvent.Quantity item(s)</span>
+                        </div>
+                        <div class="event-detail">
+                            <span class="event-detail-icon">📍</span>
+                            <span class="event-detail-text">@(recyclingEvent.Bin?.Name ?? "Unknown Location")</span>
+                        </div>
+                        <div class="event-detail">
+                            <span class="event-detail-icon">🏠</span>
+                            <span class="event-detail-text">@(recyclingEvent.Bin?.Address ?? "Address not available")</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">♻️</div>
+                <div class="empty-state-title">No Recycling History Yet</div>
+                <div class="empty-state-text">
+                    Start your recycling journey by logging your first recycling activity!
+                </div>
+                <a href="/Recycling/Index" class="btn-log-recycling">
+                    <i class="fas fa-plus"></i> Log My First Recycling
+                </a>
+            </div>
+        }
+    </div>
+</div>

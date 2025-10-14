@@ -25,23 +25,54 @@ namespace RecycleRank.Controllers
         }
 
         [HttpPost]
-        public IActionResult LogRecycling(RecyclingEvent recyclingEvent)
+        public IActionResult LogRecycling(int binId, string material, int quantity)
         {
-            // TODO: Implement recycling logging logic
-            if (ModelState.IsValid)
+            // Get current user from session
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
             {
-                _context.RecyclingEvents.Add(recyclingEvent);
-                _context.SaveChanges();
+                TempData["Error"] = "Please log in to record recycling activities.";
                 return RedirectToAction("Index");
             }
-            
-            return View("Index", recyclingEvent);
-        }
 
-        public IActionResult History()
-        {
-            // TODO: Implement user recycling history
-            return View();
+            // Find the material to get points per unit
+            var materialRecord = _context.Materials.FirstOrDefault(m => m.Name == material);
+            if (materialRecord == null)
+            {
+                TempData["Error"] = "Invalid material selected.";
+                return RedirectToAction("Index");
+            }
+
+            // Calculate points earned
+            int pointsEarned = quantity * materialRecord.PointsPerUnit;
+
+            // Create a simple recycling event
+            var recyclingEvent = new RecyclingEvent
+            {
+                UserId = userId.Value,
+                BinId = binId,
+                Material = material,
+                Quantity = quantity,
+                CreatedAt = DateTime.Now
+            };
+
+            // Add recycling event to database
+            _context.RecyclingEvents.Add(recyclingEvent);
+
+            // Update user's points
+            var user = _context.Users.Find(userId.Value);
+            if (user != null)
+            {
+                user.Points += pointsEarned;
+                
+                // Update session with new points total
+                HttpContext.Session.SetInt32("UserPoints", user.Points);
+            }
+
+            _context.SaveChanges();
+            
+            TempData["Success"] = $"Successfully logged {quantity} {material} item(s) and earned {pointsEarned} points! Total points: {user?.Points}";
+            return RedirectToAction("Index");
         }
 
         public IActionResult Map()
