@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RecycleRank.Data;
 using RecycleRank.Models;
 
@@ -61,6 +62,32 @@ namespace RecycleRank.Controllers
             HttpContext.Session.SetString("UserName", user.Name);
 
             return RedirectToAction("Index");
+        }
+
+        public IActionResult History()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Get user's recycling events with related data
+            var userEvents = _context.RecyclingEvents
+                .Include(re => re.Bin)
+                .Where(re => re.UserId == userId)
+                .OrderByDescending(re => re.CreatedAt)
+                .ToList();
+
+            var user = _context.Users.Find(userId);
+            
+            // Debug: Log the number of events found
+            System.Diagnostics.Debug.WriteLine($"Found {userEvents.Count} events for user {userId}");
+            
+            ViewBag.User = user;
+            ViewBag.Events = userEvents;
+            
+            return View();
         }
     }
 }
