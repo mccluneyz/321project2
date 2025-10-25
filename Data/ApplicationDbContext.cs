@@ -15,6 +15,7 @@ namespace RecycleRank.Data
         public DbSet<BattlePassTier> BattlePassTiers { get; set; }
         public DbSet<ShopItem> ShopItems { get; set; }
         public DbSet<UserReward> UserRewards { get; set; }
+        public DbSet<GameSession> GameSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,11 @@ namespace RecycleRank.Data
                 .HasOne(r => r.User)
                 .WithMany()
                 .HasForeignKey(r => r.UserId);
+
+            modelBuilder.Entity<GameSession>()
+                .HasOne(gs => gs.User)
+                .WithMany()
+                .HasForeignKey(gs => gs.UserId);
         }
     }
 }

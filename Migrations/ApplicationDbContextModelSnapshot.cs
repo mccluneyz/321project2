@@ -17,6 +17,46 @@ namespace RecycleRank.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
+            modelBuilder.Entity("RecycleRank.Models.BattlePassTier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsFree")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RequiredPoints")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RewardDescription")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RewardName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RewardType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RewardValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TierNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BattlePassTiers");
+                });
+
             modelBuilder.Entity("RecycleRank.Models.Bin", b =>
                 {
                     b.Property<int>("Id")
@@ -39,6 +79,40 @@ namespace RecycleRank.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Bins");
+                });
+
+            modelBuilder.Entity("RecycleRank.Models.GameSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("HighScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastPlayedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxDistance")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PlaysToday")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalGamesPlayed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalPointsEarned")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GameSessions");
                 });
 
             modelBuilder.Entity("RecycleRank.Models.Material", b =>
@@ -118,6 +192,43 @@ namespace RecycleRank.Migrations
                     b.ToTable("RecyclingEvents");
                 });
 
+            modelBuilder.Entity("RecycleRank.Models.ShopItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Cost")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ItemValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShopItems");
+                });
+
             modelBuilder.Entity("RecycleRank.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -149,9 +260,57 @@ namespace RecycleRank.Migrations
                     b.Property<int>("Rank")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("TotalPointsEarned")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("RecycleRank.Models.UserReward", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsEquipped")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RewardName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RewardType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RewardValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserRewards");
+                });
+
+            modelBuilder.Entity("RecycleRank.Models.GameSession", b =>
+                {
+                    b.HasOne("RecycleRank.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RecycleRank.Models.RecyclingEvent", b =>
@@ -169,6 +328,17 @@ namespace RecycleRank.Migrations
                         .IsRequired();
 
                     b.Navigation("Bin");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RecycleRank.Models.UserReward", b =>
+                {
+                    b.HasOne("RecycleRank.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

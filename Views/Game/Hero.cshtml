@@ -1,0 +1,348 @@
+@{
+    ViewData["Title"] = "Recycling Hero";
+}
+
+<!-- Load Phaser FIRST in head to ensure it's in global scope before ANY other scripts -->
+<script src="~/lib/phaser.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: auto;
+        background: #000;
+    }
+    
+    #game-container {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 10px;
+        box-sizing: border-box;
+        background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+    }
+    
+    canvas {
+        display: block;
+        width: auto !important;
+        height: auto !important;
+        max-width: calc(100vw - 30px);
+        max-height: calc(100vh - 120px);
+        border: 3px solid #4CAF50;
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.5);
+        margin: 10px auto;
+        object-fit: contain;
+    }
+    
+    #loading-message {
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 20px;
+        text-align: center;
+        margin-top: 50px;
+    }
+    
+    /* Level Select Menu */
+    #level-select-toggle {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(76, 175, 80, 0.5);
+        z-index: 1000;
+        transition: all 0.3s;
+    }
+    
+    #level-select-toggle:hover {
+        background: #45a049;
+        transform: scale(1.05);
+    }
+    
+    #level-select-menu {
+        position: fixed;
+        top: 80px;
+        right: -350px;
+        width: 320px;
+        height: calc(100vh - 100px);
+        background: #0f0f1e;
+        border: 3px solid #4CAF50;
+        border-radius: 8px 0 0 8px;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+        transition: right 0.3s ease;
+        z-index: 999;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+    
+    #level-select-menu.active {
+        right: 0;
+    }
+    
+    .world-section {
+        margin-bottom: 20px;
+    }
+    
+    .world-section h4 {
+        color: #4CAF50;
+        margin: 10px 0;
+        font-size: 16px;
+    }
+    
+    .level-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+    
+    .level-grid button {
+        background: #2196F3;
+        color: white;
+        border: none;
+        padding: 10px 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.2s;
+    }
+    
+    .level-grid button:hover {
+        background: #1976D2;
+        transform: scale(1.05);
+    }
+</style>
+
+<div id="game-container">
+    <div id="loading-message">Loading Recycling Hero...</div>
+</div>
+
+<!-- Level Select Menu for Testing -->
+<div id="level-select-toggle" onclick="toggleLevelMenu()">
+    📋 Levels
+</div>
+
+<div id="level-select-menu">
+    <div style="padding: 15px; border-bottom: 2px solid #4CAF50; background: #1a1a2e;">
+        <h3 style="margin: 0; color: #4CAF50;">Level Select</h3>
+        <button onclick="toggleLevelMenu()" style="float: right; margin-top: -25px; background: #f44336; border: none; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px;">✕</button>
+    </div>
+    <div style="padding: 15px; overflow-y: auto; max-height: calc(100vh - 200px);">
+        <!-- World 1: City/Forest -->
+        <div class="world-section">
+            <h4>🏙️ World 1: City Forest</h4>
+            <div class="level-grid">
+                <button onclick="jumpToLevel('Level1Scene')">1-1</button>
+                <button onclick="jumpToLevel('Level_1_2')">1-2</button>
+                <button onclick="jumpToLevel('Level_1_3')">1-3</button>
+                <button onclick="jumpToLevel('Level_1_4')">1-4</button>
+                <button onclick="jumpToLevel('Level_1_5_Boss')" style="background: #f44336;">1-5 Boss</button>
+            </div>
+        </div>
+        
+        <!-- World 2: Desert -->
+        <div class="world-section">
+            <h4>🏜️ World 2: Desert Dunes</h4>
+            <div class="level-grid">
+                <button onclick="jumpToLevel('Level_2_1')">2-1</button>
+                <button onclick="jumpToLevel('Level_2_2')">2-2</button>
+                <button onclick="jumpToLevel('Level_2_3')">2-3</button>
+                <button onclick="jumpToLevel('Level_2_4')">2-4</button>
+                <button onclick="jumpToLevel('Level_2_5_Boss')" style="background: #f44336;">2-5 Boss</button>
+            </div>
+        </div>
+        
+        <!-- World 3: Factory/Mountains -->
+        <div class="world-section">
+            <h4>🏔️ World 3: Mountain Peaks</h4>
+            <div class="level-grid">
+                <button onclick="jumpToLevel('Level_3_1')">3-1</button>
+                <button onclick="jumpToLevel('Level_3_2')">3-2</button>
+                <button onclick="jumpToLevel('Level_3_3')">3-3</button>
+                <button onclick="jumpToLevel('Level_3_4')">3-4</button>
+                <button onclick="jumpToLevel('Level_3_5_Boss')" style="background: #f44336;">3-5 Boss</button>
+            </div>
+        </div>
+        
+        <!-- World 4: Ocean -->
+        <div class="world-section">
+            <h4>🌊 World 4: Ocean Depths</h4>
+            <div class="level-grid">
+                <button onclick="jumpToLevel('Level_4_1')">4-1</button>
+                <button onclick="jumpToLevel('Level_4_2')">4-2</button>
+                <button onclick="jumpToLevel('Level_4_3')">4-3</button>
+                <button onclick="jumpToLevel('Level_4_4')">4-4</button>
+                <button onclick="jumpToLevel('Level_4_5_Boss')" style="background: #f44336;">4-5 Boss</button>
+            </div>
+        </div>
+        
+        <!-- World 5: Wasteland -->
+        <div class="world-section">
+            <h4>☣️ World 5: Toxic Wasteland</h4>
+            <div class="level-grid">
+                <button onclick="jumpToLevel('Level_5_1')">5-1</button>
+                <button onclick="jumpToLevel('Level_5_2')">5-2</button>
+                <button onclick="jumpToLevel('Level_5_3')">5-3</button>
+                <button onclick="jumpToLevel('Level_5_4')">5-4</button>
+                <button onclick="jumpToLevel('Level_5_5_Boss')" style="background: #f44336;">5-5 Boss</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level Select Menu Functions -->
+<script>
+    function toggleLevelMenu() {
+        const menu = document.getElementById('level-select-menu');
+        menu.classList.toggle('active');
+    }
+    
+    function jumpToLevel(levelKey) {
+        // Get the Phaser game instance
+        const game = window.phaserGame;
+        if (!game) {
+            console.error('Game not loaded yet!');
+            alert('Please wait for the game to load first!');
+            return;
+        }
+        
+        // Stop all current scenes
+        game.scene.scenes.forEach(scene => {
+            if (scene.scene.isActive()) {
+                scene.sound.stopAll();
+                scene.scene.stop();
+            }
+        });
+        
+        // Start the selected level
+        game.scene.start(levelKey);
+        
+        // Close the menu
+        toggleLevelMenu();
+        
+        console.log('Jumped to level:', levelKey);
+    }
+</script>
+
+<!-- Game loader - runs after Phaser is guaranteed to be loaded -->
+<script>
+    (async function() {
+        // Verify Phaser loaded
+        if (typeof Phaser === 'undefined') {
+            console.error('❌ Phaser failed to load');
+            document.getElementById('loading-message').innerHTML = 'Failed to load Phaser.<br>Please refresh the page.';
+            return;
+        }
+        
+        if (typeof Phaser.Scene === 'undefined') {
+            console.error('❌ Phaser.Scene is not defined');
+            document.getElementById('loading-message').innerHTML = 'Phaser did not load correctly.<br>Please refresh the page.';
+            return;
+        }
+        
+        console.log('✅ Phaser ready:', Phaser.VERSION);
+        
+        // Web Audio API for level complete sound (fallback)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const playLevelCompleteSound = (vol = 0.15) => {
+            // Nice ascending melody
+            [523, 659, 784, 1047].forEach((freq, i) => {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }, i * 100);
+            });
+        };
+        
+        // Patch Phaser Sound Manager to ONLY intercept level_complete_sound
+        const originalPlay = Phaser.Sound.BaseSoundManager.prototype.play;
+        Phaser.Sound.BaseSoundManager.prototype.play = function(key, config) {
+            // ONLY intercept level_complete_sound, let everything else pass through
+            if (key === 'level_complete_sound') {
+                const volume = config?.volume || 0.15;
+                playLevelCompleteSound(volume);
+                return null;
+            }
+            
+            // All other sounds play normally
+            return originalPlay.call(this, key, config);
+        };
+        
+        const originalAdd = Phaser.Sound.BaseSoundManager.prototype.add;
+        Phaser.Sound.BaseSoundManager.prototype.add = function(key, config) {
+            try {
+                if (!this.game.cache.audio.exists(key)) {
+                    if (!missingAudio.has(key)) {
+                        missingAudio.add(key);
+                        console.warn('🔇 Audio not in cache:', key);
+                    }
+                    // Return a dummy sound object that does nothing
+                    return {
+                        play: () => {},
+                        stop: () => {},
+                        pause: () => {},
+                        resume: () => {},
+                        destroy: () => {},
+                        setVolume: () => {},
+                        setLoop: () => {},
+                        on: () => {},
+                        once: () => {},
+                        off: () => {}
+                    };
+                }
+                return originalAdd.call(this, key, config);
+            } catch (e) {
+                if (!missingAudio.has(key)) {
+                    missingAudio.add(key);
+                    console.warn('🔇 Audio add error:', key);
+                }
+                return {
+                    play: () => {},
+                    stop: () => {},
+                    pause: () => {},
+                    resume: () => {},
+                    destroy: () => {},
+                    setVolume: () => {},
+                    setLoop: () => {},
+                    on: () => {},
+                    once: () => {},
+                    off: () => {}
+                };
+            }
+        };
+        
+        console.log('✅ Audio error handling enabled');
+        
+        // Give browser a moment to fully process Phaser
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        try {
+            document.getElementById('loading-message').textContent = 'Loading game modules...';
+            const module = await import('@Url.Content("~/js/hero/main.js?v=36")');
+            console.log('✅ Game started successfully!');
+            // Remove loading message
+            const loadingEl = document.getElementById('loading-message');
+            if (loadingEl) loadingEl.remove();
+        } catch (err) {
+            console.error('❌ Game error:', err);
+            console.error('Stack:', err.stack);
+            document.getElementById('loading-message').innerHTML = 
+                'Failed to load game:<br>' + err.message + 
+                '<br><br><small>Check console (F12) for details</small>';
+        }
+    })();
+</script>

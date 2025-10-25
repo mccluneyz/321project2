@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Test</title>
+</head>
+<body>
+    <h1>Audio File Test</h1>
+    <button onclick="testAudio('city')">Test City Theme</button>
+    <button onclick="testAudio('collect')">Test Collect Sound</button>
+    <div id="result"></div>
+    
+    <script>
+        function testAudio(type) {
+            const paths = {
+                'city': '/assets/hero/audio/music/city_theme.wav',
+                'collect': '/assets/hero/audio/sfx/collect_item_sound.mp3'
+            };
+            
+            const audio = new Audio(paths[type]);
+            audio.play().then(() => {
+                document.getElementById('result').innerHTML = '✅ Playing: ' + paths[type];
+            }).catch(err => {
+                document.getElementById('result').innerHTML = '❌ Error: ' + err.message + '<br>Path: ' + paths[type];
+            });
+        }
+    </script>
+</body>
+</html>
+
