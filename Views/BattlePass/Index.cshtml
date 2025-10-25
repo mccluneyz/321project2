@@ -333,6 +333,149 @@
         transform: none;
     }
     
+    /* 3D Reward Animation Styles */
+    .reward-animation-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+    }
+    
+    .reward-animation-container {
+        position: relative;
+        perspective: 1000px;
+        transform-style: preserve-3d;
+    }
+    
+    .reward-animation-icon {
+        font-size: 8rem;
+        animation: rewardPopOut 2s ease-out forwards;
+        transform-origin: center center;
+        filter: drop-shadow(0 0 20px rgba(40, 167, 69, 0.8));
+        text-shadow: 0 0 30px rgba(40, 167, 69, 0.6);
+    }
+    
+    .reward-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(40, 167, 69, 0.6) 0%, rgba(40, 167, 69, 0.3) 50%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: rewardGlow 2s ease-out forwards;
+        z-index: -1;
+    }
+    
+    .reward-particles {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 4px;
+        height: 4px;
+        background: #28a745;
+        border-radius: 50%;
+        animation: rewardParticles 1.5s ease-out forwards;
+    }
+    
+    .reward-text {
+        position: absolute;
+        bottom: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+        animation: rewardTextFade 2s ease-out forwards;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+    
+    .reward-subtext {
+        position: absolute;
+        bottom: -110px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #ffc107;
+        font-size: 1rem;
+        text-align: center;
+        animation: rewardTextFade 2s ease-out forwards;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    }
+    
+    @@keyframes rewardPopOut {
+        0% {
+            transform: scale(0) rotateY(0deg) rotateX(0deg);
+            opacity: 0;
+        }
+        20% {
+            transform: scale(1.2) rotateY(180deg) rotateX(20deg);
+            opacity: 1;
+        }
+        40% {
+            transform: scale(1.1) rotateY(360deg) rotateX(-10deg);
+        }
+        60% {
+            transform: scale(1.05) rotateY(540deg) rotateX(5deg);
+        }
+        80% {
+            transform: scale(1.02) rotateY(720deg) rotateX(0deg);
+        }
+        100% {
+            transform: scale(1) rotateY(720deg) rotateX(0deg);
+            opacity: 1;
+        }
+    }
+    
+    @@keyframes rewardGlow {
+        0% {
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+        }
+        30% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(2);
+            opacity: 0;
+        }
+    }
+    
+    @@keyframes rewardParticles {
+        0% {
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(1) translate(var(--particle-x), var(--particle-y));
+            opacity: 0;
+        }
+    }
+    
+    @@keyframes rewardTextFade {
+        0% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+        50% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+    
     .shop-section {
         background: white;
         border-radius: 20px;
@@ -680,8 +823,14 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 console.log('Response from server:', data);
                 if (data.success) {
-                    alert(data.message);
-                    location.reload();
+                    // Show 3D reward animation
+                    showRewardAnimation(tierName, tierId);
+                    
+                    // Show success message after animation
+                    setTimeout(() => {
+                        alert(data.message);
+                        location.reload();
+                    }, 2500);
                 } else {
                     alert(data.message);
                 }
@@ -693,6 +842,105 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// 3D Reward Animation Function
+function showRewardAnimation(rewardName, tierId) {
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'reward-animation-overlay';
+    
+    // Create animation container
+    const container = document.createElement('div');
+    container.className = 'reward-animation-container';
+    
+    // Get reward icon based on tier
+    const rewardIcon = getRewardIcon(tierId);
+    
+    // Create reward icon element
+    const iconElement = document.createElement('div');
+    iconElement.className = 'reward-animation-icon';
+    iconElement.innerHTML = rewardIcon;
+    
+    // Create glow effect
+    const glowElement = document.createElement('div');
+    glowElement.className = 'reward-glow';
+    
+    // Create particles
+    const particlesContainer = document.createElement('div');
+    particlesContainer.style.position = 'absolute';
+    particlesContainer.style.top = '50%';
+    particlesContainer.style.left = '50%';
+    particlesContainer.style.transform = 'translate(-50%, -50%)';
+    
+    // Create multiple particles
+    for (let i = 0; i < 12; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'reward-particles';
+        const angle = (i * 30) * Math.PI / 180;
+        const distance = 100 + Math.random() * 50;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        particle.style.setProperty('--particle-x', x + 'px');
+        particle.style.setProperty('--particle-y', y + 'px');
+        particle.style.animationDelay = Math.random() * 0.5 + 's';
+        particlesContainer.appendChild(particle);
+    }
+    
+    // Create reward text
+    const textElement = document.createElement('div');
+    textElement.className = 'reward-text';
+    textElement.textContent = rewardName;
+    
+    const subtextElement = document.createElement('div');
+    subtextElement.className = 'reward-subtext';
+    subtextElement.textContent = 'REWARD UNLOCKED!';
+    
+    // Assemble the animation
+    container.appendChild(glowElement);
+    container.appendChild(iconElement);
+    container.appendChild(particlesContainer);
+    container.appendChild(textElement);
+    container.appendChild(subtextElement);
+    overlay.appendChild(container);
+    
+    // Add to page
+    document.body.appendChild(overlay);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+        if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
+    }, 3000);
+}
+
+// Get reward icon based on tier ID
+function getRewardIcon(tierId) {
+    const rewardIcons = {
+        1: '🏆',      // Trophy
+        2: '⭐',      // Star
+        3: '💎',      // Diamond
+        4: '👑',      // Crown
+        5: '🎖️',     // Medal
+        6: '🏅',      // Medal
+        7: '💫',      // Sparkles
+        8: '🌟',      // Star
+        9: '🎯',      // Target
+        10: '🔥',     // Fire
+        11: '⚡',     // Lightning
+        12: '💪',     // Muscle
+        13: '🎨',     // Art
+        14: '🎪',     // Circus
+        15: '🎭',     // Theater
+        16: '🎪',     // Circus
+        17: '🎨',     // Art
+        18: '🎯',     // Target
+        19: '🏆',     // Trophy
+        20: '👑'      // Crown
+    };
+    
+    return rewardIcons[tierId] || '🎁'; // Default gift box
+}
 
 function claimReward(tierId) {
     console.log('claimReward called with tierId:', tierId);
@@ -723,8 +971,14 @@ function claimReward(tierId) {
     .then(data => {
         console.log('Response from server:', data);
         if (data.success) {
-            alert(data.message);
-            location.reload();
+            // Show 3D reward animation
+            showRewardAnimation('Reward', tierId);
+            
+            // Show success message after animation
+            setTimeout(() => {
+                alert(data.message);
+                location.reload();
+            }, 2500);
         } else {
             alert(data.message);
         }

@@ -15,6 +15,7 @@ namespace RecycleRank.Data
         public DbSet<BattlePassTier> BattlePassTiers { get; set; }
         public DbSet<ShopItem> ShopItems { get; set; }
         public DbSet<UserReward> UserRewards { get; set; }
+        public DbSet<Event> Events { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
