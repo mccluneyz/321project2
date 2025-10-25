@@ -1,0 +1,463 @@
+@model IEnumerable<RecycleRank.Models.Event>
+@{
+    ViewData["Title"] = "Recycling Events";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .calendar-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .calendar-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-nav button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .calendar-nav button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e9ecef;
+        }
+        
+        .calendar-day-header {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #6c757d;
+        }
+        
+        .calendar-day {
+            background: white;
+            padding: 15px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
+            position: relative;
+        }
+        
+        .calendar-day:hover {
+            background: #f8f9fa;
+        }
+        
+        .calendar-day.other-month {
+            color: #adb5bd;
+            background: #f8f9fa;
+        }
+        
+        .calendar-day.today {
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: bold;
+        }
+        
+        .calendar-day.has-events {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .calendar-day.has-events:hover {
+            background: #c3e6cb;
+        }
+        
+        .event-indicator {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #28a745;
+            border-radius: 50%;
+        }
+        
+        .event-tooltip {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .event-tooltip.show {
+            opacity: 1;
+        }
+        
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            border-left: 4px solid #28a745;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.2s;
+        }
+        
+        .event-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .event-time {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .event-title {
+            font-weight: bold;
+            color: #28a745;
+            margin: 5px 0;
+        }
+        
+        .event-location {
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Navigation -->
+            <div class="page-navigation mb-4">
+                <a href="/Home/Index" class="btn btn-outline-primary">
+                    <span>🏠</span> Home
+                </a>
+                <a href="/Recycling/Index" class="btn btn-outline-success">
+                    <span>♻️</span> Log Activity
+                </a>
+                <a href="/Recycling/Map" class="btn btn-outline-info">
+                    <span>🗺️</span> Map
+                </a>
+                <a href="/Leaderboard/Index" class="btn btn-outline-warning">
+                    <span>🏆</span> Leaderboard
+                </a>
+                <a href="/Admin/Index" class="btn btn-outline-secondary">
+                    <span>⚙️</span> Admin
+                </a>
+            </div>
+            
+            <h1 class="mb-4">📅 Interactive Recycling Events Calendar</h1>
+            
+            <!-- Success/Error Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <div class="calendar-nav">
+                                <button onclick="previousMonth()">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <h3 id="current-month-year"></h3>
+                                <button onclick="nextMonth()">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid">
+                            <!-- Calendar will be generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                Events for <span id="selected-date-text"></span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="event-list" id="event-list">
+                                <!-- Events will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Event Data (Hidden) -->
+            <div id="events-data" style="display: none;">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var evt in Model)
+                    {
+                        <div class="event-data" 
+                             data-date="@evt.EventDate.ToString("yyyy-MM-dd")"
+                             data-title="@evt.Title"
+                             data-description="@evt.Description"
+                             data-location="@evt.Location"
+                             data-time="@evt.EventDate.ToString("h:mm tt")"
+                             data-creator="@(evt.CreatedByUser?.Name ?? "Admin")">
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentDate = new Date();
+let selectedDate = new Date();
+
+// Initialize calendar
+document.addEventListener('DOMContentLoaded', function() {
+    generateCalendar();
+    updateSelectedDate();
+});
+
+function generateCalendar() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    const currentMonthYear = document.getElementById('current-month-year');
+    
+    // Clear previous calendar
+    calendarGrid.innerHTML = '';
+    
+    // Set month/year header
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    currentMonthYear.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    
+    // Add day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day-header';
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
+    });
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    // Add days from previous month
+    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 0);
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        const dayElement = createDayElement(prevMonth.getDate() - i, true);
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = createDayElement(day, false);
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Add days from next month to fill grid
+    const totalCells = calendarGrid.children.length - 7; // Subtract day headers
+    const remainingCells = 42 - totalCells; // 6 rows * 7 days = 42 cells
+    for (let day = 1; day <= remainingCells; day++) {
+        const dayElement = createDayElement(day, true);
+        calendarGrid.appendChild(dayElement);
+    }
+}
+
+function createDayElement(day, isOtherMonth) {
+    const dayElement = document.createElement('div');
+    dayElement.className = 'calendar-day';
+    dayElement.textContent = day;
+    
+    if (isOtherMonth) {
+        dayElement.classList.add('other-month');
+    }
+    
+    // Check if this is today
+    const today = new Date();
+    const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    if (!isOtherMonth && cellDate.toDateString() === today.toDateString()) {
+        dayElement.classList.add('today');
+    }
+    
+    // Check if this day has events
+    const dateString = formatDateString(cellDate);
+    const hasEvents = checkForEvents(dateString);
+    if (hasEvents) {
+        dayElement.classList.add('has-events');
+        const indicator = document.createElement('div');
+        indicator.className = 'event-indicator';
+        dayElement.appendChild(indicator);
+    }
+    
+    // Add click event
+    dayElement.addEventListener('click', function() {
+        if (!isOtherMonth) {
+            selectedDate = cellDate;
+            updateSelectedDate();
+        }
+    });
+    
+    // Add hover event for tooltip
+    dayElement.addEventListener('mouseenter', function(e) {
+        if (hasEvents) {
+            showEventTooltip(e, dateString);
+        }
+    });
+    
+    dayElement.addEventListener('mouseleave', function() {
+        hideEventTooltip();
+    });
+    
+    return dayElement;
+}
+
+function checkForEvents(dateString) {
+    const eventElements = document.querySelectorAll('.event-data');
+    return Array.from(eventElements).some(event => event.dataset.date === dateString);
+}
+
+function formatDateString(date) {
+    return date.getFullYear() + '-' + 
+           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(date.getDate()).padStart(2, '0');
+}
+
+function updateSelectedDate() {
+    const selectedDateText = document.getElementById('selected-date-text');
+    const eventList = document.getElementById('event-list');
+    
+    const dateString = formatDateString(selectedDate);
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    selectedDateText.textContent = `${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`;
+    
+    // Find events for selected date
+    const eventsForDate = getEventsForDate(dateString);
+    
+    if (eventsForDate.length === 0) {
+        eventList.innerHTML = '<p class="text-muted text-center">No events scheduled for this date.</p>';
+    } else {
+        eventList.innerHTML = eventsForDate.map(event => `
+            <div class="event-item">
+                <div class="event-time">${event.time}</div>
+                <div class="event-title">${event.title}</div>
+                <div class="event-location">
+                    <i class="fas fa-map-marker-alt me-1"></i>${event.location}
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fas fa-user me-1"></i>${event.creator}
+                    </small>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function getEventsForDate(dateString) {
+    const eventElements = document.querySelectorAll('.event-data');
+    const events = [];
+    
+    eventElements.forEach(eventElement => {
+        if (eventElement.dataset.date === dateString) {
+            events.push({
+                title: eventElement.dataset.title,
+                description: eventElement.dataset.description,
+                location: eventElement.dataset.location,
+                time: eventElement.dataset.time,
+                creator: eventElement.dataset.creator
+            });
+        }
+    });
+    
+    return events;
+}
+
+function previousMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    generateCalendar();
+}
+
+function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    generateCalendar();
+}
+
+let tooltip = null;
+
+function showEventTooltip(event, dateString) {
+    const events = getEventsForDate(dateString);
+    if (events.length === 0) return;
+    
+    tooltip = document.createElement('div');
+    tooltip.className = 'event-tooltip show';
+    tooltip.innerHTML = events.map(event => `
+        <div><strong>${event.title}</strong></div>
+        <div>${event.time} - ${event.location}</div>
+    `).join('<hr>');
+    
+    document.body.appendChild(tooltip);
+    
+    const rect = event.target.getBoundingClientRect();
+    tooltip.style.left = rect.left + 'px';
+    tooltip.style.top = (rect.bottom + 5) + 'px';
+}
+
+function hideEventTooltip() {
+    if (tooltip) {
+        tooltip.remove();
+        tooltip = null;
+    }
+}
+</script>

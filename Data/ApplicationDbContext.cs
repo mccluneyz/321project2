@@ -16,6 +16,7 @@ namespace RecycleRank.Data
         public DbSet<ShopItem> ShopItems { get; set; }
         public DbSet<UserReward> UserRewards { get; set; }
         public DbSet<Post> Posts { get; set; }
+        public DbSet<Event> Events { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

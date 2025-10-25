@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RecycleRank.Data;
 using RecycleRank.Models;
 using RecycleRank.Services;
@@ -96,6 +97,17 @@ namespace RecycleRank.Controllers
         {
             var bins = _context.Bins.ToList();
             return View(bins);
+        }
+
+        public IActionResult Events()
+        {
+            var events = _context.Events
+                .Include(e => e.CreatedByUser)
+                .Where(e => e.IsActive && e.EventDate >= DateTime.Now)
+                .OrderBy(e => e.EventDate)
+                .ToList();
+            
+            return View(events);
         }
     }
 }
