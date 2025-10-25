@@ -1,0 +1,62 @@
+@model RecycleRank.Models.Post
+@{
+    ViewData["Title"] = "Share Your Recycling";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4>🌱 Share Your Recycling Experience</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="Content" class="form-label">What did you recycle today?</label>
+                            <textarea name="Content" id="Content" class="form-control" rows="4" 
+                                     placeholder="Share your recycling tips, achievements, or experiences with the community..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imageFile" class="form-label">Add a Photo (Optional)</label>
+                            <div class="image-upload-container">
+                                <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" onchange="previewImage(this)">
+                                <div class="form-text">Upload a photo of your recycling activity to inspire others!</div>
+                                <div id="imagePreview" class="mt-3" style="display: none;">
+                                    <img id="previewImg" src="" alt="Preview" class="img-fluid rounded" style="max-height: 300px; width: 100%; object-fit: cover;">
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImage()">Remove Image</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Share with Community</button>
+                            <a href="/Social" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeImage() {
+    document.getElementById('imageFile').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('previewImg').src = '';
+}
+</script>
