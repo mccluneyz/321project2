@@ -16,6 +16,8 @@ namespace RecycleRank.Data
         public DbSet<ShopItem> ShopItems { get; set; }
         public DbSet<UserReward> UserRewards { get; set; }
         public DbSet<GameSession> GameSessions { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Event> Events { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +43,11 @@ namespace RecycleRank.Data
                 .HasOne(gs => gs.User)
                 .WithMany()
                 .HasForeignKey(gs => gs.UserId);
+
+            modelBuilder.Entity<Post>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId);
         }
     }
 }

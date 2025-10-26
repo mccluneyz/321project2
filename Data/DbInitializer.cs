@@ -136,6 +136,56 @@ namespace RecycleRank.Data
                 context.UserRewards.Add(reward);
             }
 
+            // Seed Sample Events
+            var events = new Event[]
+            {
+                new Event 
+                { 
+                    Title = "Campus Cleanup Day", 
+                    Description = "Join us for a campus-wide cleanup event! We'll be collecting recyclables and cleaning up the quad area.", 
+                    EventDate = DateTime.Now.AddDays(3), 
+                    CreatedAt = DateTime.Now, 
+                    CreatedByUserId = testAdmin.Id, 
+                    Location = "The Quad, University of Alabama",
+                    IsActive = true
+                },
+                new Event 
+                { 
+                    Title = "Recycling Competition", 
+                    Description = "Compete with fellow students to see who can recycle the most! Prizes for top recyclers.", 
+                    EventDate = DateTime.Now.AddDays(7), 
+                    CreatedAt = DateTime.Now, 
+                    CreatedByUserId = testAdmin.Id, 
+                    Location = "Gorgas Library",
+                    IsActive = true
+                },
+                new Event 
+                { 
+                    Title = "Eco-Friendly Workshop", 
+                    Description = "Learn about sustainable living and advanced recycling techniques. Free refreshments provided!", 
+                    EventDate = DateTime.Now.AddDays(14), 
+                    CreatedAt = DateTime.Now, 
+                    CreatedByUserId = testAdmin.Id, 
+                    Location = "Student Center",
+                    IsActive = true
+                },
+                new Event 
+                { 
+                    Title = "Earth Day Celebration", 
+                    Description = "Join us for our annual Earth Day celebration with games, prizes, and educational booths!", 
+                    EventDate = DateTime.Now.AddDays(21), 
+                    CreatedAt = DateTime.Now, 
+                    CreatedByUserId = testAdmin.Id, 
+                    Location = "Bryant-Denny Stadium",
+                    IsActive = true
+                }
+            };
+
+            foreach (var evt in events)
+            {
+                context.Events.Add(evt);
+            }
+
             context.SaveChanges();
         }
     }

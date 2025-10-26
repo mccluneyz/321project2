@@ -203,5 +203,94 @@ namespace RecycleRank.Controllers
 
             return RedirectToAction("AllRecyclingEvents");
         }
+
+        [HttpPost]
+        public IActionResult CreateBin(string name, string address, double latitude, double longitude)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var bin = new Bin
+            {
+                Name = name,
+                Address = address,
+                Latitude = latitude,
+                Longitude = longitude
+            };
+
+            _context.Bins.Add(bin);
+            _context.SaveChanges();
+            TempData["Success"] = $"Recycling bin '{name}' added successfully! You can now see it on the map.";
+
+            return RedirectToAction("Map", "Recycling");
+        }
+
+        [HttpPost]
+        public IActionResult UpdateBin(int binId, string name, string address, double latitude, double longitude)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var bin = _context.Bins.Find(binId);
+            if (bin != null)
+            {
+                bin.Name = name;
+                bin.Address = address;
+                bin.Latitude = latitude;
+                bin.Longitude = longitude;
+                _context.SaveChanges();
+                TempData["Success"] = $"Recycling bin '{name}' updated successfully!";
+            }
+
+            return RedirectToAction("Map", "Recycling");
+        }
+
+        [HttpPost]
+        public IActionResult DeleteBin(int binId)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var bin = _context.Bins.Find(binId);
+            if (bin != null)
+            {
+                var binName = bin.Name;
+                _context.Bins.Remove(bin);
+                _context.SaveChanges();
+                TempData["Success"] = $"Recycling bin '{binName}' deleted successfully!";
+            }
+
+            return RedirectToAction("Map", "Recycling");
+        }
     }
 }

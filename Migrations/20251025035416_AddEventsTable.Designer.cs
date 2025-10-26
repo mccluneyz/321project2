@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecycleRank.Data;
 
@@ -10,9 +11,11 @@ using RecycleRank.Data;
 namespace RecycleRank.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251025035416_AddEventsTable")]
+    partial class AddEventsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -118,40 +121,6 @@ namespace RecycleRank.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("RecycleRank.Models.GameSession", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("HighScore")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("LastPlayedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MaxDistance")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("PlaysToday")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TotalGamesPlayed")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TotalPointsEarned")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("GameSessions");
-                });
-
             modelBuilder.Entity("RecycleRank.Models.Material", b =>
                 {
                     b.Property<int>("Id")
@@ -168,30 +137,6 @@ namespace RecycleRank.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Materials");
-                });
-
-            modelBuilder.Entity("RecycleRank.Models.Post", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("RecycleRank.Models.Rank", b =>
@@ -373,29 +318,6 @@ namespace RecycleRank.Migrations
 
                     b.Navigation("CreatedByUser");
                 });
-
-            modelBuilder.Entity("RecycleRank.Models.GameSession", b =>
-                {
-                    b.HasOne("RecycleRank.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RecycleRank.Models.Post", b =>
-                {
-                    b.HasOne("RecycleRank.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
 
             modelBuilder.Entity("RecycleRank.Models.RecyclingEvent", b =>
                 {
