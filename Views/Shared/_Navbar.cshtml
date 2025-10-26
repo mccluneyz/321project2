@@ -19,9 +19,12 @@
                 <button class="icon-btn" onclick="window.location.href='/BattlePass/Index'" title="Battle Pass">
                     🎮
                 </button>
-    <button class="icon-btn" onclick="window.location.href='/Social/Index'" title="Community Feed">
-        📱
-    </button>
+                <button class="icon-btn" onclick="window.location.href='/Game/Index'" title="Recycling Hero">
+                    🦸
+                </button>
+                <button class="icon-btn" onclick="window.location.href='/Social/Index'" title="Community Feed">
+                    📱
+                </button>
                 @if (Context.Session.GetString("IsAdmin") == "True")
                 {
                     <button class="icon-btn" onclick="window.location.href='/Admin/Index'" title="Admin">

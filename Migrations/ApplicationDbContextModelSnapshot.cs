@@ -118,6 +118,40 @@ namespace RecycleRank.Migrations
                     b.ToTable("Events");
                 });
 
+            modelBuilder.Entity("RecycleRank.Models.GameSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("HighScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastPlayedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxDistance")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PlaysToday")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalGamesPlayed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalPointsEarned")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GameSessions");
+                });
+
             modelBuilder.Entity("RecycleRank.Models.Material", b =>
                 {
                     b.Property<int>("Id")
@@ -329,6 +363,28 @@ namespace RecycleRank.Migrations
                     b.ToTable("UserRewards");
                 });
 
+            modelBuilder.Entity("RecycleRank.Models.Event", b =>
+                {
+                    b.HasOne("RecycleRank.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+                });
+
+            modelBuilder.Entity("RecycleRank.Models.GameSession", b =>
+                {
+                    b.HasOne("RecycleRank.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RecycleRank.Models.Post", b =>
                 {
                     b.HasOne("RecycleRank.Models.User", "User")
@@ -340,16 +396,6 @@ namespace RecycleRank.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RecycleRank.Models.Event", b =>
-                {
-                    b.HasOne("RecycleRank.Models.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByUser");
-                });
 
             modelBuilder.Entity("RecycleRank.Models.RecyclingEvent", b =>
                 {

@@ -1,0 +1,18 @@
+# Ignore large asset files (optional - remove if you want to commit assets)
+# Uncomment the lines below if assets are too large for Git
+
+# Ignore all files larger than 5MB
+# *.glb
+# *.fbx
+# *.mp3
+# *.ogg
+# *.wav
+
+# But keep README and folder structure
+!README.md
+!.gitignore
+
+# Keep example/placeholder files if they're small
+!*_placeholder.*
+!*_example.*
+

@@ -1,0 +1,626 @@
+{
+  "fonts": {
+    "files": [
+      {
+        "url": "https://cdn-game-mcp-test.gambo.ai/shared/retro-pixel-arcade.otf.woff2",
+        "type": "font",
+        "key": "RetroPixel",
+        "fontType": "opentype"
+      }
+    ]
+  },
+  "tilemaps": {
+    "files": [
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_1_1",
+        "url": "/assets/hero/tilemaps/level_1_1.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_1_2",
+        "url": "/assets/hero/tilemaps/level_1_2.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_1_3",
+        "url": "/assets/hero/tilemaps/level_1_3.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_1_4",
+        "url": "/assets/hero/tilemaps/level_1_4.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_1_5_boss",
+        "url": "/assets/hero/tilemaps/level_1_5_boss.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_2_1",
+        "url": "/assets/hero/tilemaps/level_2_1.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_2_2",
+        "url": "/assets/hero/tilemaps/level_2_2.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_2_3",
+        "url": "/assets/hero/tilemaps/level_2_3.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_2_4",
+        "url": "/assets/hero/tilemaps/level_2_4.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_2_5_boss",
+        "url": "/assets/hero/tilemaps/level_2_5_boss.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_3_1",
+        "url": "/assets/hero/tilemaps/level_3_1.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_3_2",
+        "url": "/assets/hero/tilemaps/level_3_2.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_3_3",
+        "url": "/assets/hero/tilemaps/level_3_3.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_3_4",
+        "url": "/assets/hero/tilemaps/level_3_4.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_3_5_boss",
+        "url": "/assets/hero/tilemaps/level_3_5_boss.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_4_1",
+        "url": "/assets/hero/tilemaps/level_4_1.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_5_1",
+        "url": "/assets/hero/tilemaps/level_5_1.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "level_5_5_boss",
+        "url": "/assets/hero/tilemaps/level_5_5_boss.json"
+      }
+    ]
+  },
+  "tilesets": {
+    "files": [
+      {
+        "type": "image",
+        "key": "city_ground",
+        "url": "/assets/hero/tilesets/city_ground.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_ground",
+        "url": "https://cdn-game-mcp.gambo.ai/32103e77-aa55-4141-a5cc-b803dbcc73ad/tilesets/desert_ground.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_ground",
+        "url": "https://cdn-game-mcp.gambo.ai/65cdf0f5-badf-4b7e-9521-f14a6a3e2eec/tilesets/factory_ground.png"
+      },
+      {
+        "type": "image",
+        "key": "ocean_ground",
+        "url": "https://cdn-game-mcp.gambo.ai/7cb65d14-95a7-4a9d-9970-aa174d5a842d/tilesets/ocean_ground.png"
+      },
+      {
+        "type": "image",
+        "key": "wasteland_ground",
+        "url": "https://cdn-game-mcp.gambo.ai/9f9c45c2-c39c-493c-af35-5792ba9aedac/tilesets/wasteland_ground.png"
+      }
+    ]
+  },
+  "backgrounds": {
+    "files": [
+      {
+        "type": "image",
+        "key": "city_background",
+        "url": "https://cdn-game-mcp.gambo.ai/00e0d49f-ebd3-4416-baa9-99339b58f919/images/city_background.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_background",
+        "url": "https://cdn-game-mcp.gambo.ai/abf22758-8e19-40fe-b844-c49ff5931321/images/desert_background.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_background",
+        "url": "https://cdn-game-mcp.gambo.ai/48dde704-2b7c-4be0-a9d6-8d5d4632506e/images/factory_background.png"
+      },
+      {
+        "type": "image",
+        "key": "ocean_background",
+        "url": "https://cdn-game-mcp.gambo.ai/689cbe68-97f8-46d4-8773-f389e1428864/images/ocean_background.png"
+      },
+      {
+        "type": "image",
+        "key": "wasteland_background",
+        "url": "https://cdn-game-mcp.gambo.ai/e7255287-e6c9-4f73-9a15-d2ff9c846b0c/images/wasteland_background.png"
+      }
+    ]
+  },
+  "ui_images": {
+    "files": [
+      {
+        "type": "image",
+        "key": "game_title",
+        "url": "https://cdn-game-mcp.gambo.ai/1df16bde-d367-428b-99fd-674fdf693cce/images/game_title_recycling.png"
+      }
+    ]
+  },
+  "collectibles": {
+    "files": [
+      {
+        "type": "image",
+        "key": "plastic_bottle",
+        "url": "https://cdn-game-mcp.gambo.ai/57568b35-e886-4349-a237-8d998e92cfe5/images/plastic_bottle.png"
+      },
+      {
+        "type": "image",
+        "key": "aluminum_can",
+        "url": "https://cdn-game-mcp.gambo.ai/4404503e-4d89-4968-b685-d25b160d1947/images/aluminum_can.png"
+      },
+      {
+        "type": "image",
+        "key": "paper_item",
+        "url": "https://cdn-game-mcp.gambo.ai/1353870d-929e-4e48-b1c4-fb1aba530dad/images/paper_item.png"
+      },
+      {
+        "type": "image",
+        "key": "glass_bottle",
+        "url": "https://cdn-game-mcp.gambo.ai/7302a10a-556c-4479-9207-282e3dc153ff/images/glass_bottle.png"
+      }
+    ]
+  },
+  "player_animations": {
+    "files": [
+      {
+        "type": "image",
+        "key": "recycling_hero_idle_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/3f3d879d-ba94-4fec-8f5e-8b31e5aaf329/animations/recycling_hero_idle_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_idle_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/3df2fed8-b666-4e6a-9617-3dfa47465fc2/animations/recycling_hero_idle_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_walk_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/db2fca42-548c-4130-bc18-18312fffc54b/animations/recycling_hero_walk_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_walk_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/67df749e-a461-4d6e-90e3-a33c213d201c/animations/recycling_hero_walk_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_jump_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/c11df4e7-bb8c-4481-8832-93863914a869/animations/recycling_hero_jump_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_jump_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/ddc28253-a416-451e-be89-9eabac1ea34f/animations/recycling_hero_jump_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_throw_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/9d48bcc4-4cdd-490e-bad3-7911f01906f0/animations/recycling_hero_throw_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_throw_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/017f2c53-560d-4f6c-90c9-cdb035f5b8aa/animations/recycling_hero_throw_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_die_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/2c82253d-7722-4f42-9ef6-b7a31110087c/animations/recycling_hero_die_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "recycling_hero_die_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/5ff47258-b45f-49cd-84b2-91c4df5755a2/animations/recycling_hero_die_R/frame_2.png"
+      }
+    ]
+  },
+  "enemy_animations": {
+    "files": [
+      {
+        "type": "image",
+        "key": "smog_blob_walk_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/d8369c92-7527-4ef5-bdbe-90d7c0132409/animations/smog_blob_walk_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "smog_blob_walk_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/77954127-aced-4899-8315-2c0de9341fa3/animations/smog_blob_walk_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "smog_blob_die_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/b9d95e30-0a97-4017-9e55-8c09a848b993/animations/smog_blob_die_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "smog_blob_die_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/17b383ac-0b2c-4c64-bc96-c441f9e47317/animations/smog_blob_die_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "trash_tumbleweed_walk_frame1",
+        "url": "/assets/hero/images/enemies/trash_tumbleweed_walk_frame1.png"
+      },
+      {
+        "type": "image",
+        "key": "trash_tumbleweed_walk_frame2",
+        "url": "/assets/hero/images/enemies/trash_tumbleweed_walk_frame2.png"
+      },
+      {
+        "type": "image",
+        "key": "trash_tumbleweed_die_frame1",
+        "url": "/assets/hero/images/enemies/trash_tumbleweed_die_frame1.png"
+      },
+      {
+        "type": "image",
+        "key": "trash_tumbleweed_die_frame2",
+        "url": "/assets/hero/images/enemies/trash_tumbleweed_die_frame2.png"
+      },
+      {
+        "type": "image",
+        "key": "oil_slick_walk_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/4c9483cb-d45e-42ab-9e26-126ba378b8f4/animations/oil_slick_walk_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "oil_slick_walk_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/25c563ab-8bc5-4023-8d99-d6f4731ea5d1/animations/oil_slick_walk_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "oil_slick_die_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/9f370f6e-e3e3-4859-b060-ffadf738192f/animations/oil_slick_die_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "oil_slick_die_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/f52933ca-6a0e-4f74-80a8-0fd23bbeb181/animations/oil_slick_die_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "plastic_jellyfish_walk_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/e2a9d49a-252e-4559-a8bd-3248dde70580/animations/plastic_jellyfish_walk_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "plastic_jellyfish_walk_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/08a00304-d115-4af9-a8ef-78ae2207e6d9/animations/plastic_jellyfish_walk_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "plastic_jellyfish_die_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/9ee6a166-b47c-4ea0-ad04-b77f84ac17fd/animations/plastic_jellyfish_die_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "plastic_jellyfish_die_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/ab3f65c2-02ac-42d7-9b58-77a893eabf81/animations/plastic_jellyfish_die_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "toxic_barrel_walk_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/3d734cc4-e0bb-4e90-af81-a5833ca9695a/animations/toxic_barrel_walk_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "toxic_barrel_walk_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/05a987ca-73e4-4c24-90d8-f89eb9f71eb8/animations/toxic_barrel_walk_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "toxic_barrel_die_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/144b9616-76ca-488d-9630-3f285ff080b4/animations/toxic_barrel_die_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "toxic_barrel_die_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/b3704add-e10c-450c-8594-c517288709c2/animations/toxic_barrel_die_R/frame_2.png"
+      }
+    ]
+  },
+  "boss_animations": {
+    "files": [
+      {
+        "type": "image",
+        "key": "pollution_boss_idle_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/747a7d4e-5fcc-4c0f-b474-b5f85f5e0297/animations/pollution_boss_idle_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_idle_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/0ecd74fc-016e-4418-a7dd-aebfc757568a/animations/pollution_boss_idle_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_walk_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/41f9398e-983e-4c25-a332-28aa9abf979d/animations/pollution_boss_walk_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_walk_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/9884e335-4d2d-41f9-8617-3ebcaed9db4c/animations/pollution_boss_walk_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_attack_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/53d1e194-a728-4eaf-aac5-8929f7d8e05d/animations/pollution_boss_attack_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_attack_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/ad74f33b-d25f-4bcd-af04-a381d3fd20c1/animations/pollution_boss_attack_R/frame_2.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_die_frame1",
+        "url": "https://cdn-game-mcp.gambo.ai/efae3054-2a5a-4f55-ba53-5f726ed5b377/animations/pollution_boss_die_R/frame_1.png"
+      },
+      {
+        "type": "image",
+        "key": "pollution_boss_die_frame2",
+        "url": "https://cdn-game-mcp.gambo.ai/8318081c-8454-4daf-a8bf-94de5bb2301b/animations/pollution_boss_die_R/frame_2.png"
+      }
+    ]
+  },
+  "decoration_images": {
+    "files": [
+      {
+        "type": "image",
+        "key": "city_building_1",
+        "url": "https://cdn-game-mcp.gambo.ai/a26f7330-80fe-4e64-9c22-5e997c6b7458/images/city_buildings/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "city_building_2",
+        "url": "https://cdn-game-mcp.gambo.ai/137a89df-7806-4b52-9b5e-871cd61ced6d/images/city_buildings/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "city_building_3",
+        "url": "https://cdn-game-mcp.gambo.ai/12d3baf6-4713-440b-a8d9-59ff36d47888/images/city_buildings/variant_3.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cactus_1",
+        "url": "https://cdn-game-mcp.gambo.ai/338557c6-9649-4723-88ac-820652135179/images/desert_cacti/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cactus_2",
+        "url": "https://cdn-game-mcp.gambo.ai/841dfcb5-51a3-42da-8de5-6a86d19dc333/images/desert_cacti/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cactus_3",
+        "url": "https://cdn-game-mcp.gambo.ai/2a7cde58-aa18-4add-91dc-f93a34951c55/images/desert_cacti/variant_3.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_1",
+        "url": "https://cdn-game-mcp.gambo.ai/338557c6-9649-4723-88ac-820652135179/images/desert_cacti/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_2",
+        "url": "https://cdn-game-mcp.gambo.ai/841dfcb5-51a3-42da-8de5-6a86d19dc333/images/desert_cacti/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_3",
+        "url": "https://cdn-game-mcp.gambo.ai/2a7cde58-aa18-4add-91dc-f93a34951c55/images/desert_cacti/variant_3.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_4",
+        "url": "https://cdn-game-mcp.gambo.ai/7b49cfd4-297c-4463-a2bb-a7419ec76eb7/images/desert_cacti/variant_4.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_5",
+        "url": "https://cdn-game-mcp.gambo.ai/68c41422-0b98-4ae4-8903-dd0bb1fb2c28/images/desert_cacti/variant_5.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_6",
+        "url": "https://cdn-game-mcp.gambo.ai/035fb82f-23e5-428c-8cb4-1366ad571954/images/desert_cacti/variant_6.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_7",
+        "url": "https://cdn-game-mcp.gambo.ai/be5bfd22-4046-4df1-b15e-158265e95dca/images/desert_cacti/variant_7.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_8",
+        "url": "https://cdn-game-mcp.gambo.ai/8dbaac58-5a04-4ba9-833f-7c62bf4e7b26/images/desert_cacti/variant_8.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_9",
+        "url": "https://cdn-game-mcp.gambo.ai/be5c29c1-41a2-4cab-bc72-d9d8495f02c5/images/desert_cacti/variant_9.png"
+      },
+      {
+        "type": "image",
+        "key": "desert_cacti_variant_10",
+        "url": "https://cdn-game-mcp.gambo.ai/27d15607-acec-4e8d-9646-4b3fe7e1b68e/images/desert_cacti/variant_10.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipe_1",
+        "url": "https://cdn-game-mcp.gambo.ai/fab4b32c-ea53-4003-bc0a-03e8c675c091/images/factory_pipes/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipe_2",
+        "url": "https://cdn-game-mcp.gambo.ai/bd6ade1c-e649-41cc-8851-76d10245f356/images/factory_pipes/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipe_3",
+        "url": "https://cdn-game-mcp.gambo.ai/4db05af5-ef23-45a3-a1dd-28a66a04d966/images/factory_pipes/variant_3.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_1",
+        "url": "https://cdn-game-mcp.gambo.ai/fab4b32c-ea53-4003-bc0a-03e8c675c091/images/factory_pipes/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_2",
+        "url": "https://cdn-game-mcp.gambo.ai/bd6ade1c-e649-41cc-8851-76d10245f356/images/factory_pipes/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_3",
+        "url": "https://cdn-game-mcp.gambo.ai/4db05af5-ef23-45a3-a1dd-28a66a04d966/images/factory_pipes/variant_3.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_4",
+        "url": "https://cdn-game-mcp.gambo.ai/88eac591-9ea8-4a6b-aafd-cf90df70fead/images/factory_pipes/variant_4.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_5",
+        "url": "https://cdn-game-mcp.gambo.ai/573a3bac-60e5-46c9-8c9a-6fcbeba6001e/images/factory_pipes/variant_5.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_6",
+        "url": "https://cdn-game-mcp.gambo.ai/61f8f67a-9c22-4508-ba97-e2a6bc410747/images/factory_pipes/variant_6.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_7",
+        "url": "https://cdn-game-mcp.gambo.ai/abd16807-e03f-4710-9681-4c1d571725e6/images/factory_pipes/variant_7.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_8",
+        "url": "https://cdn-game-mcp.gambo.ai/68bd60d7-1535-4629-8e7f-fff86650ea12/images/factory_pipes/variant_8.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_9",
+        "url": "https://cdn-game-mcp.gambo.ai/eccdbea3-f157-45db-8eb7-cf8859d4c1da/images/factory_pipes/variant_9.png"
+      },
+      {
+        "type": "image",
+        "key": "factory_pipes_variant_10",
+        "url": "https://cdn-game-mcp.gambo.ai/61a167ed-3751-4d93-9ec1-420f6a73b070/images/factory_pipes/variant_10.png"
+      },
+      {
+        "type": "image",
+        "key": "ocean_debris_1",
+        "url": "https://cdn-game-mcp.gambo.ai/406b8ad1-27b5-485e-8a6b-1f6c12434118/images/ocean_debris/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "ocean_debris_2",
+        "url": "https://cdn-game-mcp.gambo.ai/6298b226-2b5e-4ffb-8f96-6451a79431ff/images/ocean_debris/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "ocean_debris_3",
+        "url": "https://cdn-game-mcp.gambo.ai/3fb0535f-0136-4f03-a918-8aa8cbe48998/images/ocean_debris/variant_3.png"
+      },
+      {
+        "type": "image",
+        "key": "wasteland_barrel_1",
+        "url": "https://cdn-game-mcp.gambo.ai/d125f1f8-a1ce-4710-aab5-435898b8623a/images/wasteland_barrels/variant_1.png"
+      },
+      {
+        "type": "image",
+        "key": "wasteland_barrel_2",
+        "url": "https://cdn-game-mcp.gambo.ai/eb7ca3f3-0397-4146-b5a4-6f8c740061ad/images/wasteland_barrels/variant_2.png"
+      },
+      {
+        "type": "image",
+        "key": "wasteland_barrel_3",
+        "url": "https://cdn-game-mcp.gambo.ai/82f00d14-eebd-44d9-b36b-1ac5fb36ba69/images/wasteland_barrels/variant_3.png"
+      }
+    ]
+  },
+  "sound_effects": {
+    "files": [
+      {
+        "type": "audio",
+        "key": "collect_item_sound",
+        "url": "/assets/hero/audio/sfx/collect_item_sound.mp3"
+      },
+      {
+        "type": "audio",
+        "key": "throw_item_sound",
+        "url": "/assets/hero/audio/sfx/throw_item_sound.mp3"
+      },
+      {
+        "type": "audio",
+        "key": "boss_hit_sound",
+        "url": "/assets/hero/audio/sfx/boss_hit_sound.mp3"
+      },
+      {
+        "type": "audio",
+        "key": "level_complete_sound",
+        "url": "/assets/hero/audio/sfx/level_complete_sound.mp3"
+      }
+    ]
+  },
+  "background_musics": {
+    "files": [
+      {
+        "type": "audio",
+        "key": "city_theme",
+        "url": "/assets/hero/audio/music/city_theme.wav"
+      },
+      {
+        "type": "audio",
+        "key": "desert_theme",
+        "url": "/assets/hero/audio/music/desert_theme.wav"
+      },
+      {
+        "type": "audio",
+        "key": "boss_battle_theme",
+        "url": "/assets/hero/audio/music/boss_battle_theme.wav"
+      }
+    ]
+  },
+  "meta": {
+    "app": "Gambo AI - Recycling Hero",
+    "version": 1,
+    "showAllFilesInBlocks": false
+  }
+}
