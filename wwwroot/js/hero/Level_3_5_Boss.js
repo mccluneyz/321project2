@@ -19,7 +19,7 @@ export class Level_3_5_Boss extends Phaser.Scene {
     this.createDecorations()
     this.createPlayer()
     this.createBoss()
-    this.createFloatingPlatforms()
+    // this.createFloatingPlatforms() // REMOVED - platforms not needed for boss fight
     this.setupCollisions()
     
     this.mapHeight = 15 * 64  // 960px - same as map
@@ -155,6 +155,16 @@ export class Level_3_5_Boss extends Phaser.Scene {
     
     // Shield pushes boss away
     this.physics.add.overlap(this.player.shield, this.boss, this.shieldPushBoss, null, this)
+    
+    // SWORD hits boss
+    if (this.player.sword) {
+      this.physics.add.overlap(this.player.sword, this.boss, (sword, boss) => {
+        if (boss.isDying || !this.player.swordActive) return
+        if (!this.player.canSwordHit(boss)) return  // Prevent multi-hit
+        boss.takeDamage(15, true)  // Sword damage (works on metal skin)
+        if (this.sound) this.sound.play("boss_hit_sound", { volume: 0.3 })
+      }, null, this)
+    }
     
     // Player-Boss collision - handles both stomp and damage
     this.physics.add.overlap(this.player, this.boss, (player, boss) => {

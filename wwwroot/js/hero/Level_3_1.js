@@ -3,6 +3,7 @@ import { screenSize, playerConfig } from './gameConfig.js'
 import { RecyclingPlayer } from './RecyclingPlayer.js'
 import { PollutionEnemy } from './PollutionEnemy.js'
 import { LevelManager } from './LevelManager.js'
+import { openPauseMenu } from './PauseHelper.js'
 
 export class Level_3_1 extends Phaser.Scene {
   constructor() {
@@ -172,7 +173,7 @@ export class Level_3_1 extends Phaser.Scene {
 
   update(time, delta) {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
-      this.returnToMenu()
+      openPauseMenu(this)
       return
     }
 

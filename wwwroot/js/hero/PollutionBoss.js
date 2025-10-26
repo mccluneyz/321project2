@@ -1,4 +1,5 @@
 // Phaser loaded globally
+import { gameStats } from './GameStats.js'
 
 export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, enemyType = 'city') {
@@ -394,10 +395,15 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
       return
     }
     
+    // Don't update if boss is dead/dying or body doesn't exist
+    if (this.isDying || this.isDead || !this.body || !this.active) {
+      return
+    }
+    
     if (!player || !player.active) {
       this.play(this.getAnimKey('idle'), true)
       this.resetOriginAndOffset()
-      this.body.setVelocityX(0)
+      if (this.body) this.body.setVelocityX(0)
       return
     }
     
@@ -425,6 +431,7 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
       // Medium/long range - shoot projectiles while walking
       this.play(this.getAnimKey('walk'), true)
       this.resetOriginAndOffset()
+      // ALWAYS move towards player, even when jumping
       this.body.setVelocityX(this.facingRight ? this.walkSpeed : -this.walkSpeed)
       
       // Shoot projectiles occasionally (if enabled)
@@ -433,10 +440,11 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
         this.lastProjectileTime = now
       }
     } else {
-      // Too far, idle
-      this.play(this.getAnimKey('idle'), true)
+      // Far away - still walk towards player
+      this.play(this.getAnimKey('walk'), true)
       this.resetOriginAndOffset()
-      this.body.setVelocityX(0)
+      // ALWAYS move towards player, never stop
+      this.body.setVelocityX(this.facingRight ? this.walkSpeed : -this.walkSpeed)
     }
   }
   
@@ -468,68 +476,83 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
   shootProjectile() {
     if (!this.scene || !this.scene.bossProjectiles) return
     
-    // Create a trash projectile from boss's position
-    const projectileX = this.x + (this.facingRight ? 40 : -40)
-    const projectileY = this.y - this.displayHeight / 2
-    
-    // Use animated projectile spritesheet if available, fallback to recyclable
-    const useSheet = this.scene.textures.exists('boss_projectile_sheet')
-    const projectile = this.scene.physics.add.sprite(
-      projectileX, 
-      projectileY, 
-      useSheet ? 'boss_projectile_sheet' : 'recyclable_plastic_bottle',
-      useSheet ? 0 : undefined
-    )
-    
-    // Create and play projectile animation if spritesheet exists
-    if (useSheet) {
-      const animKey = 'boss_projectile_spin'
-      if (!this.scene.anims.exists(animKey)) {
-        this.scene.anims.create({
-          key: animKey,
-          frames: this.scene.anims.generateFrameNumbers('boss_projectile_sheet', { start: 0, end: 24 }),
-          frameRate: 20,
-          repeat: -1
-        })
-      }
-      projectile.play(animKey)
-      projectile.setScale(0.15)  // Smaller scale for the larger spritesheet frames
-    } else {
-      projectile.setScale(0.8)
-      projectile.setAngularVelocity(200)  // Only rotate if using fallback sprite
-    }
-    
-    projectile.body.setAllowGravity(false)
-    
-    // Mark as homing projectile
-    projectile.isHoming = true
-    projectile.homingSpeed = 200  // Tracking speed
-    projectile.homingStrength = 0.03  // How aggressively it tracks
-    
-    // Initial velocity toward player
     const player = this.scene.player
-    if (player) {
-      const angle = Phaser.Math.Angle.Between(projectileX, projectileY, player.x, player.y)
-      projectile.setVelocity(
-        Math.cos(angle) * 150,
-        Math.sin(angle) * 150
-      )
+    if (!player) return
+    
+    // Burst fire mode - shoot multiple projectiles
+    const projectileCount = this.burstFireMode ? (this.burstCount || 3) : 1
+    
+    for (let i = 0; i < projectileCount; i++) {
+      // Stagger burst shots slightly
+      const delay = i * 50
+      this.scene.time.delayedCall(delay, () => {
+        if (!this.scene || !this.scene.bossProjectiles || !this.active) return
+        
+        // Create a trash projectile from boss's position
+        const projectileX = this.x + (this.facingRight ? 40 : -40)
+        const projectileY = this.y - this.displayHeight / 2
+        
+        // Use animated projectile spritesheet if available, fallback to recyclable
+        const useSheet = this.scene.textures.exists('boss_projectile_sheet')
+        const projectile = this.scene.physics.add.sprite(
+          projectileX, 
+          projectileY, 
+          useSheet ? 'boss_projectile_sheet' : 'recyclable_plastic_bottle',
+          useSheet ? 0 : undefined
+        )
+        
+        // Create and play projectile animation if spritesheet exists
+        if (useSheet) {
+          const animKey = 'boss_projectile_spin'
+          if (!this.scene.anims.exists(animKey)) {
+            this.scene.anims.create({
+              key: animKey,
+              frames: this.scene.anims.generateFrameNumbers('boss_projectile_sheet', { start: 0, end: 24 }),
+              frameRate: 20,
+              repeat: -1
+            })
+          }
+          projectile.play(animKey)
+          projectile.setScale(0.15)  // Smaller scale for the larger spritesheet frames
+        } else {
+          projectile.setScale(0.8)
+          projectile.setAngularVelocity(200)  // Only rotate if using fallback sprite
+        }
+        
+        projectile.body.setAllowGravity(false)
+        
+        // Mark as homing projectile
+        projectile.isHoming = true
+        projectile.homingSpeed = this.burstFireMode ? 280 : 230  // Faster homing in burst mode
+        projectile.homingStrength = this.burstFireMode ? 0.05 : 0.03  // More aggressive tracking
+        
+        // Initial velocity toward player with spread for burst fire
+        const baseAngle = Phaser.Math.Angle.Between(projectileX, projectileY, player.x, player.y)
+        const spreadAngle = this.burstFireMode ? (i - 1) * 0.2 : 0  // Spread burst shots
+        const angle = baseAngle + spreadAngle
+        
+        const speed = this.burstFireMode ? 240 : 180  // Faster projectiles in burst mode (increased from 200/150)
+        projectile.setVelocity(
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed
+        )
+        
+        // Add to boss projectiles group
+        this.scene.bossProjectiles.add(projectile)
+        
+        // Play throw sound
+        if (this.scene.sound) {
+          this.scene.sound.play("throw_item_sound", { volume: 0.2 })
+        }
+        
+        // Destroy projectile after 5 seconds
+        this.scene.time.delayedCall(5000, () => {
+          if (projectile && projectile.active) {
+            projectile.destroy()
+          }
+        })
+      })
     }
-    
-    // Add to boss projectiles group
-    this.scene.bossProjectiles.add(projectile)
-    
-    // Play throw sound
-    if (this.scene.sound) {
-      this.scene.sound.play("throw_item_sound", { volume: 0.3 })
-    }
-    
-    // Destroy projectile after 5 seconds
-    this.scene.time.delayedCall(5000, () => {
-      if (projectile && projectile.active) {
-        projectile.destroy()
-      }
-    })
   }
   
   updateHealthBar() {
@@ -538,28 +561,55 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
     const barX = this.x - this.healthBarWidth / 2
     const barY = this.y - this.targetHeight - 60  // Use stored target height
     
-    // Clear and redraw background
-    this.healthBarBg.clear()
-    this.healthBarBg.fillStyle(0x000000, 0.7)
-    this.healthBarBg.fillRect(barX, barY, this.healthBarWidth, this.healthBarHeight)
+    // Check if invincible (health is 9999)
+    const isInvincible = this.health >= 9999
     
-    // Clear and redraw foreground
-    this.healthBarFg.clear()
-    const healthPercent = this.health / this.maxHealth
-    const fgWidth = (this.healthBarWidth - 4) * healthPercent
-    
-    // Color based on buffs: Metal Skin = gray, Power Surge = orange/red, Both = purple, Normal = red
-    let barColor = 0xff0000  // Default red
-    if (this.hasMetalSkin && this.hasPowerSurge) {
-      barColor = 0xaa00ff  // Purple when both active
-    } else if (this.hasMetalSkin) {
-      barColor = 0x404040  // Dark gray for metal skin
-    } else if (this.hasPowerSurge) {
-      barColor = 0xff8800  // Orange/red for power surge
+    if (isInvincible) {
+      // Hide health bar during invincibility
+      this.healthBarBg.clear()
+      this.healthBarFg.clear()
+      
+      // Show INVINCIBLE text instead
+      if (!this.invincibleText) {
+        this.invincibleText = this.scene.add.text(this.x, barY, 'INVINCIBLE', {
+          fontFamily: 'RetroPixel, monospace',
+          fontSize: '24px',
+          fill: '#FFD700',
+          stroke: '#000000',
+          strokeThickness: 4
+        }).setOrigin(0.5).setDepth(2000)
+      }
+      this.invincibleText.setPosition(this.x, barY)
+      this.invincibleText.setVisible(true)
+    } else {
+      // Hide invincible text if it exists
+      if (this.invincibleText) {
+        this.invincibleText.setVisible(false)
+      }
+      
+      // Clear and redraw background
+      this.healthBarBg.clear()
+      this.healthBarBg.fillStyle(0x000000, 0.7)
+      this.healthBarBg.fillRect(barX, barY, this.healthBarWidth, this.healthBarHeight)
+      
+      // Clear and redraw foreground
+      this.healthBarFg.clear()
+      const healthPercent = this.health / this.maxHealth
+      const fgWidth = (this.healthBarWidth - 4) * healthPercent
+      
+      // Color based on buffs: Metal Skin = gray, Power Surge = orange/red, Both = purple, Normal = red
+      let barColor = 0xff0000  // Default red
+      if (this.hasMetalSkin && this.hasPowerSurge) {
+        barColor = 0xaa00ff  // Purple when both active
+      } else if (this.hasMetalSkin) {
+        barColor = 0x404040  // Dark gray for metal skin
+      } else if (this.hasPowerSurge) {
+        barColor = 0xff8800  // Orange/red for power surge
+      }
+      
+      this.healthBarFg.fillStyle(barColor)
+      this.healthBarFg.fillRect(barX + 2, barY + 2, fgWidth, this.healthBarHeight - 4)
     }
-    
-    this.healthBarFg.fillStyle(barColor)
-    this.healthBarFg.fillRect(barX + 2, barY + 2, fgWidth, this.healthBarHeight - 4)
   }
   
   activateMetalSkin() {
@@ -629,6 +679,10 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
       return
     }
     
+    // Track damage dealt for stats
+    gameStats.addDamageDealt(amount)
+    console.log('✅ Damage tracked:', amount, '| Total damage dealt:', gameStats.damageDealt)
+    
     this.health -= amount
     
     // Flash white when hit (unless metal skin active)
@@ -662,12 +716,23 @@ export class PollutionBoss extends Phaser.Physics.Arcade.Sprite {
   }
   
   die() {
+    if (this.isDying || this.isDead) return
+    
+    console.log('💀 Boss die() called! Health:', this.health)
+    
+    // Track enemy kill for stats
+    gameStats.addEnemyKill()
+    console.log('✅ Boss kill tracked! Total enemies defeated:', gameStats.enemiesKilled)
+    
     this.isDying = true
     this.isDead = true
     this.body.setVelocity(0, 0)
     this.body.setAllowGravity(false)
     this.play(this.getAnimKey('die'))
     this.resetOriginAndOffset()
+    
+    // CRITICAL: Mark as inactive immediately so Level can detect death
+    this.setActive(false)
     
     // Hide boss name
     if (this.bossName) {

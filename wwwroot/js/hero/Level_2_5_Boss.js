@@ -112,7 +112,7 @@ export class Level_2_5_Boss extends Phaser.Scene {
 
   createBoss() {
     const bossX = 45 * 64
-    const bossY = 5 * 64  // Spawn higher, will fall and land on ground
+    const bossY = 11 * 64  // Spawn lower on ground to prevent floating
     this.boss = new PollutionBoss(this, bossX, bossY, 'desert')
     this.physics.add.collider(this.boss, this.groundLayer)
   }
@@ -367,6 +367,12 @@ export class Level_2_5_Boss extends Phaser.Scene {
 
     if (this.boss && this.boss.active) {
       this.boss.update(delta, this.player)
+      
+      // Update boss health bar in UI
+      const uiScene = this.scene.get("UIScene")
+      if (uiScene) {
+        uiScene.updateBossHealth(this.boss.health, this.boss.maxHealth)
+      }
     }
     
     // Update homing projectiles

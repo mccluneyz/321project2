@@ -3,8 +3,11 @@ import { screenSize, playerConfig } from './gameConfig.js'
 import { RecyclingPlayer } from './RecyclingPlayer.js'
 import { PollutionBoss } from './PollutionBoss.js'
 import { HolyRecyclingBin } from './HolyRecyclingBin.js'
+import { HeavenDoors } from './HeavenDoors.js'
 import { LevelManager } from './LevelManager.js'
-import { PoisonBlob } from './PoisonBlob.js'
+import { AirStrike } from './AirStrike.js'
+import { autoGrantItems } from './ItemProgression.js'
+import { openPauseMenu } from './PauseHelper.js'
 
 export class Level_5_5_Boss extends Phaser.Scene {
   constructor() {
@@ -12,6 +15,8 @@ export class Level_5_5_Boss extends Phaser.Scene {
   }
 
   create() {
+    console.log('🎮 Level_5_5_Boss: Starting boss level...')
+    
     const screenWidth = screenSize.width.value
     const screenHeight = screenSize.height.value
 
@@ -20,7 +25,6 @@ export class Level_5_5_Boss extends Phaser.Scene {
     this.createTilemap()
     this.createPlayer()
     this.createBoss()
-    this.createFloatingPlatforms()
     this.setupCollisions()
     
     this.mapHeight = 15 * 64  // 960px
@@ -32,6 +36,7 @@ export class Level_5_5_Boss extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys()
     this.wasd = {
       up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
       left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
     }
@@ -48,11 +53,21 @@ export class Level_5_5_Boss extends Phaser.Scene {
       recyclablesCollected: 999,
       maxRecyclables: 999
     })
+    
+    // Hide the top boss health bar - we only want health bars above enemies
+    this.time.delayedCall(100, () => {
+      const uiScene = this.scene.get("UIScene")
+      if (uiScene && uiScene.hideBossHealthBar) {
+        uiScene.hideBossHealthBar()
+        console.log('✅ Top boss health bar hidden - only showing health bar above boss')
+      }
+    })
 
     this.bossMusic = this.sound.add("final_boss_theme", { volume: 0.5, loop: false })
     this.bossMusic.play()
     
     this.holyBin = null
+    this.heavenDoors = null
     this.bossDefeatedFlag = false
     this.finalStandTriggered = false
     this.endingTriggered = false
@@ -62,17 +77,11 @@ export class Level_5_5_Boss extends Phaser.Scene {
     // Track music time for final stand at 2 minutes (120 seconds)
     this.finalStandMusicTime = 120000 // 2 minutes in milliseconds
     
-    // Poison blob enemies system
-    this.poisonBlobs = this.add.group()
-    this.lastPoisonSpawnTime = 0
-    this.poisonSpawnCooldown = 15000 // Spawn poison blob rarely - every 15 seconds
-    
-    // Player poison status
-    this.playerPoisoned = false
-    this.poisonDamageTimer = 0
-    this.poisonDamageInterval = 1000 // Damage every 1 second while poisoned
-    this.poisonDuration = 5000 // Poison lasts 5 seconds
-    this.poisonEndTime = 0
+    // Air strike tracking
+    this.airStrikes = []
+    this.lastAirStrikeTime = 0
+    this.airStrikeCooldown = 8000 // Every 8 seconds (more frequent)
+    this.airStrikeChance = 0.8 // 80% chance when cooldown is ready (much more likely)
   }
 
   createBackground(screenWidth, screenHeight) {
@@ -109,6 +118,9 @@ export class Level_5_5_Boss extends Phaser.Scene {
     this.bossProjectiles = this.add.group()
     this.physics.add.collider(this.player, this.groundLayer)
     this.player.setCollideWorldBounds(true)
+    
+    // Auto-grant all items for world 5 (wasteland)
+    autoGrantItems(this, this.player)
   }
 
   createBoss() {
@@ -125,48 +137,37 @@ export class Level_5_5_Boss extends Phaser.Scene {
     this.boss.updateHealthBar()  // Force health bar update
   }
   
-  createFloatingPlatforms() {
-    // Create small 3-tile floating platforms for vertical movement
-    this.platforms = this.add.group()
-    
-    const platformPositions = [
-      { x: 8, y: 9 },   // Left side, mid height
-      { x: 20, y: 7 },  // Center-left, higher
-      { x: 32, y: 9 },  // Right side, mid height
-      { x: 14, y: 5 },  // Center-left, high
-      { x: 26, y: 5 }   // Center-right, high
-    ]
-    
-    platformPositions.forEach(pos => {
-      for (let i = 0; i < 3; i++) {
-        const tile = this.add.rectangle((pos.x + i) * 64 + 32, pos.y * 64 + 32, 64, 64, 0x444444)
-        tile.setStrokeStyle(2, 0x222222)
-        this.physics.add.existing(tile, true)  // Static body
-        this.platforms.add(tile)
-      }
-    })
-    
-    // Add collision with player
-    this.physics.add.collider(this.player, this.platforms.getChildren())
-  }
-  
   setupCollisions() {
     this.physics.add.overlap(this.projectiles, this.boss, this.projectileHitBoss, null, this)
     
-    // Boss projectiles hit player
-    this.physics.add.overlap(this.bossProjectiles, this.player, this.bossProjectileHitPlayer, null, this)
-    
-    // Shield blocks boss projectiles
+    // Shield blocks boss projectiles - CHECK THIS FIRST before player damage
     this.physics.add.overlap(this.bossProjectiles, this.player.shield, this.shieldBlockProjectile, null, this)
+    
+    // Boss projectiles hit player - checked AFTER shield (shield has priority)
+    this.physics.add.overlap(this.bossProjectiles, this.player, this.bossProjectileHitPlayer, null, this)
     
     // Shield pushes boss away
     this.physics.add.overlap(this.player.shield, this.boss, this.shieldPushBoss, null, this)
     
     // Player-Boss collision
     this.physics.add.overlap(this.player, this.boss, (player, boss) => {
+      if (!player || !boss || !player.active || !boss.active) return
       if (boss.isDying || player.isInvulnerable) return
       
-      if (player.isShieldActive()) {
+      // Check shield - with safety check for method existence
+      if (player.isShieldActive && typeof player.isShieldActive === 'function' && player.isShieldActive()) {
+        return
+      }
+      
+      // Check if player is actually touching boss (wider for damage, but still need to be close)
+      const distance = Phaser.Math.Distance.Between(player.x, player.y, boss.x, boss.y)
+      const touchDistance = 120  // Wider damage range but still requires proximity
+      
+      if (distance > touchDistance) return
+      
+      // NO DAMAGE during final stand - only dodge!
+      if (this.survivalMode) {
+        this.playerHitBoss(player, boss)
         return
       }
       
@@ -174,7 +175,7 @@ export class Level_5_5_Boss extends Phaser.Scene {
       const bossCenter = boss.y - boss.body.height / 2
       
       if (player.body.velocity.y > 0 && playerBottom < bossCenter) {
-        boss.takeDamage(20)
+        boss.takeDamage(10)  // Reduced stomp damage
         player.body.setVelocityY(-400)
         if (this.sound) this.sound.play("boss_hit_sound", { volume: 0.4 })
       } else {
@@ -182,16 +183,17 @@ export class Level_5_5_Boss extends Phaser.Scene {
       }
     }, null, this)
     
-    // Poison blobs hit player (apply poison)
-    this.physics.add.overlap(this.player, this.poisonBlobs, this.playerTouchPoisonBlob, null, this)
-    
-    // Player projectiles can kill poison blobs
-    this.physics.add.overlap(this.player.recyclables, this.poisonBlobs, this.projectileHitPoisonBlob, null, this)
-    
-    // Sword can kill poison blobs
-    if (this.player.sword) {
-      this.physics.add.overlap(this.player.sword, this.poisonBlobs, this.swordHitPoisonBlob, null, this)
+    // Sword can damage boss ONLY before final stand
+    if (this.player && this.player.sword) {
+      this.physics.add.overlap(this.player.sword, this.boss, (sword, boss) => {
+        if (boss.isDying || !this.player.swordActive) return
+        if (this.survivalMode) return  // NO DAMAGE during final stand
+        if (!this.player.canSwordHit(boss)) return  // Prevent multi-hit
+        boss.takeDamage(10, true)  // Reduced sword damage (still effective vs metal skin)
+        if (this.sound) this.sound.play("boss_hit_sound", { volume: 0.3 })
+      }, null, this)
     }
+    
   }
   
   playerHitBoss(player, boss) {
@@ -207,7 +209,13 @@ export class Level_5_5_Boss extends Phaser.Scene {
   projectileHitBoss(projectile, boss) {
     if (boss.isDying) return
     projectile.destroy()
-    boss.takeDamage(15)
+    
+    // NO DAMAGE during final stand - just destroy projectile
+    if (this.survivalMode) {
+      return
+    }
+    
+    boss.takeDamage(10)  // Reduced projectile damage
     if (this.sound) {
       this.sound.play("boss_hit_sound", { volume: 0.4 })
     }
@@ -216,7 +224,8 @@ export class Level_5_5_Boss extends Phaser.Scene {
   bossProjectileHitPlayer(projectile, player) {
     if (!player || !player.active || player.isInvulnerable) return
     
-    if (player.isShieldActive()) return
+    // Check shield - with safety check for method existence
+    if (player.isShieldActive && typeof player.isShieldActive === 'function' && player.isShieldActive()) return
     
     if (projectile && projectile.active) {
       projectile.destroy()
@@ -233,7 +242,10 @@ export class Level_5_5_Boss extends Phaser.Scene {
   
   shieldBlockProjectile(projectile, shield) {
     if (!projectile || !projectile.active) return
+    if (!this.player || !this.player.isShieldActive || typeof this.player.isShieldActive !== 'function') return
+    if (!this.player.isShieldActive()) return
     
+    // Shield successfully blocks projectile
     projectile.destroy()
     
     // Play block sound (quieter)
@@ -241,13 +253,16 @@ export class Level_5_5_Boss extends Phaser.Scene {
       this.sound.play("collect_item_sound", { volume: 0.2 })
     }
     
+    // Visual feedback - flash shield
     this.tweens.add({
       targets: shield,
       alpha: 1,
+      scale: shield.scale * 1.2,
       duration: 100,
       yoyo: true,
       onComplete: () => {
         shield.setAlpha(0.9)
+        shield.setScale(0.15)
       }
     })
   }
@@ -257,84 +272,82 @@ export class Level_5_5_Boss extends Phaser.Scene {
     return
   }
   
-  spawnPoisonBlob() {
-    if (!this.boss || !this.boss.active || this.boss.isDying) return
+  triggerFinalStandFromBin(holyBin) {
+    if (this.finalStandTriggered) return
     
-    // Spawn poison blob near boss
-    const offsetX = Phaser.Math.Between(-2, 2) * 64  // Near boss
-    const blobX = this.boss.x + offsetX
-    const blobY = 8 * 64  // Spawn above ground so it falls down
-    
-    console.log('☠️ Spawning poison blob at:', blobX, blobY)
-    
-    const blob = new PoisonBlob(this, blobX, blobY)
-    this.poisonBlobs.add(blob)
-    
-    // Play spawn sound
-    if (this.sound) {
-      this.sound.play("throw_item_sound", { volume: 0.3 })
-    }
-  }
-  
-  playerTouchPoisonBlob(player, blob) {
-    if (!blob || !blob.active) return
-    if (this.playerPoisoned) return  // Already poisoned
-    if (player.isShieldActive()) {
-      // Shield destroys the blob without applying poison
-      blob.die()
-      return
-    }
-    
-    // Apply poison status
-    this.playerPoisoned = true
-    this.poisonEndTime = this.time.now + this.poisonDuration
-    this.poisonDamageTimer = 0
-    
-    // Visual feedback - player turns green
-    player.setTint(0x00ff88)
-    
-    // Destroy the blob
-    blob.die()
-    
-    console.log('☠️ Player poisoned by blob! Taking damage for 5 seconds')
-  }
-  
-  projectileHitPoisonBlob(projectile, blob) {
-    if (!blob || !blob.active || !projectile || !projectile.active) return
-    
-    blob.takeDamage(15)  // Projectiles do 15 damage
-    projectile.destroy()
-  }
-  
-  swordHitPoisonBlob(sword, blob) {
-    if (!blob || !blob.active || blob.isDying) return
-    if (!this.player || !this.player.isSwordActive()) return
-    
-    blob.takeDamage(30)  // Sword does 30 damage (kills in one hit)
-  }
-
-  triggerFinalStand() {
     this.finalStandTriggered = true
     this.survivalMode = true
     this.finalStandStartTime = this.time.now
     
-    // Skip music to 2-minute mark if boss defeated early
-    const currentMusicTime = this.bossMusic.seek
-    const twoMinutesMark = 120 // 2 minutes in seconds
+    // No holy music to stop (using sound effect instead)
     
-    if (currentMusicTime < twoMinutesMark) {
-      console.log(`⏩ Boss defeated early! Skipping from ${currentMusicTime.toFixed(1)}s to ${twoMinutesMark}s`)
-      this.bossMusic.seek = twoMinutesMark
+    // Restart boss music at 2-minute mark
+    if (this.sound.get("final_boss_theme")) {
+      this.bossMusic = this.sound.get("final_boss_theme")
+    } else {
+      this.bossMusic = this.sound.add("final_boss_theme", { volume: 0.5, loop: false })
     }
     
-    // Boss regains health and becomes MORE dangerous
-    this.boss.health = 9999 // Effectively invincible during final stand
+    // Destroy the fake holy bin
+    if (holyBin && holyBin.active) {
+      holyBin.destroy()
+    }
+    
+    // Destroy sparkle particles if they exist
+    if (holyBin.sparkleParticles) {
+      holyBin.sparkleParticles.destroy()
+    }
+    
+    // WHITE FLASH SCREEN
+    const whiteFlash = this.add.rectangle(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2,
+      this.cameras.main.width * 2,
+      this.cameras.main.height * 2,
+      0xffffff
+    )
+    whiteFlash.setScrollFactor(0)
+    whiteFlash.setDepth(10000)
+    whiteFlash.setAlpha(1)
+    
+    // Flash effect
+    this.tweens.add({
+      targets: whiteFlash,
+      alpha: 0,
+      duration: 800,
+      ease: 'Power2',
+      onComplete: () => whiteFlash.destroy()
+    })
+    
+    // Revive the boss at same position
+    const bossX = 30 * 64
+    const bossY = 11 * 64
+    this.boss.setPosition(bossX, bossY)
+    this.boss.setActive(true)
+    this.boss.setVisible(true)
+    this.boss.isDying = false
+    this.boss.isDead = false
+    
+    // Start boss music at 2-minute mark for final stand
+    const twoMinutesMark = 120 // 2 minutes in seconds
+    this.bossMusic.play()
+    this.bossMusic.seek = twoMinutesMark
+    console.log(`🎵 Boss music restarted at ${twoMinutesMark}s for FINAL STAND!`)
+    
+    // Boss becomes INVINCIBLE
+    this.boss.health = 9999
     this.boss.maxHealth = 9999
     
-    // Make boss MUCH more aggressive
-    if (this.boss.shootCooldown) {
-      this.boss.shootCooldown = 500 // Faster shooting (was probably 2000+)
-    }
+    // Make boss INSANELY aggressive - SURVIVAL MODE
+    this.boss.projectileShootCooldown = 600 // Shoot every 0.6 seconds (was 2500ms)
+    this.boss.walkSpeed = 100 // Move faster (was 30)
+    this.boss.baseWalkSpeed = 100
+    this.boss.damage = 50 // Double damage if touched
+    this.boss.canShoot = true // Ensure shooting is enabled
+    
+    // Enable burst fire mode - shoot multiple projectiles
+    this.boss.burstFireMode = true
+    this.boss.burstCount = 2 // Shoot 2 projectiles at once
     
     // Visual effect - boss glows red indicating final stand
     this.boss.setTint(0xff0000)
@@ -379,22 +392,136 @@ export class Level_5_5_Boss extends Phaser.Scene {
     // Screen shake
     this.cameras.main.shake(1000, 0.01)
     
-    console.log('🔥 FINAL STAND TRIGGERED! SURVIVE UNTIL THE MUSIC ENDS! 🔥')
+    // Spawn poison blobs more frequently during final stand
+    this.poisonSpawnCooldown = 12000 // Every 12 seconds (was 15)
+    
+    console.log('🔥 FINAL STAND TRIGGERED! SURVIVE FOR YOUR LIFE! 🔥')
   }
 
-  bossDefeated() {
-    // Stop boss music
+  triggerFinalStand() {
+    if (this.finalStandTriggered) return
+    
+    this.finalStandTriggered = true
+    this.survivalMode = true
+    this.finalStandStartTime = this.time.now
+    
+    console.log('🔥 FINAL STAND TRIGGERED!')
+    console.log('🔥 survivalMode =', this.survivalMode)
+    
+    // HEAL BOSS TO FULL HEALTH
+    this.boss.health = this.boss.maxHealth
+    console.log('💚 Boss healed to full health:', this.boss.health)
+    
+    // WHITE FLASH SCREEN
+    const whiteFlash = this.add.rectangle(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2,
+      this.cameras.main.width * 2,
+      this.cameras.main.height * 2,
+      0xffffff
+    )
+    whiteFlash.setScrollFactor(0)
+    whiteFlash.setDepth(10000)
+    whiteFlash.setAlpha(1)
+    
+    // Flash effect
+    this.tweens.add({
+      targets: whiteFlash,
+      alpha: 0,
+      duration: 800,
+      ease: 'Power2',
+      onComplete: () => whiteFlash.destroy()
+    })
+    
+    // Restart boss music at BEST PART (1:30 mark = 90 seconds) for intensity
     if (this.bossMusic) {
       this.bossMusic.stop()
     }
+    this.bossMusic = this.sound.add("final_boss_theme", { volume: 0.6, loop: false })
+    this.bossMusic.play()
+    // Seek to 1:30 (90 seconds) - the most intense part of the boss theme
+    this.bossMusic.once('play', () => {
+      this.bossMusic.seek(90)
+      console.log('🎵 Boss music jumped to 1:30 mark (best part) for FINAL STAND!')
+    })
     
-    // Spawn Holy Recycling Bin where boss died
-    const holyBinX = this.boss.x
-    const holyBinY = this.boss.y
-    this.spawnHolyBin(holyBinX, holyBinY)
+    // Make boss INVINCIBLE
+    this.boss.health = 9999
+    this.boss.maxHealth = 9999
+    
+    // Make boss INSANELY aggressive - SURVIVAL MODE
+    this.boss.projectileShootCooldown = 400 // Shoot every 0.4 seconds (VERY FAST)
+    this.boss.walkSpeed = 200  // MUCH faster so player can't run away
+    this.boss.baseWalkSpeed = 200
+    this.boss.jumpPower = -500  // Higher jumps to chase player
+    this.boss.damage = 50
+    this.boss.canShoot = true
+    
+    // Enable burst fire mode - shoot TRIPLE projectiles
+    this.boss.burstFireMode = true
+    this.boss.burstCount = 3  // 3 projectiles per burst
+    
+    // Visual effect - boss glows red
+    this.boss.setTint(0xff0000)
+    this.tweens.add({
+      targets: this.boss,
+      alpha: { from: 1, to: 0.7 },
+      duration: 300,
+      yoyo: true,
+      repeat: -1
+    })
+    
+    // Show dramatic text
+    const finalStandText = this.add.text(this.cameras.main.width / 2, 200, 'FINAL STAND!\nSURVIVE!', {
+      fontFamily: 'RetroPixel, monospace',
+      fontSize: '64px',
+      fill: '#ff0000',
+      stroke: '#000000',
+      strokeThickness: 8,
+      align: 'center'
+    }).setOrigin(0.5).setDepth(2000).setScrollFactor(0)
+    
+    // Flash and fade out text
+    this.tweens.add({
+      targets: finalStandText,
+      alpha: 0,
+      scale: 2,
+      duration: 3000,
+      ease: 'Power2',
+      onComplete: () => finalStandText.destroy()
+    })
+    
+    // Create survival timer UI
+    this.survivalTimerText = this.add.text(this.cameras.main.width / 2, 50, '', {
+      fontFamily: 'RetroPixel, monospace',
+      fontSize: '32px',
+      fill: '#ffff00',
+      stroke: '#000000',
+      strokeThickness: 6,
+      align: 'center'
+    }).setOrigin(0.5).setDepth(2000).setScrollFactor(0)
+    
+    // Screen shake
+    this.cameras.main.shake(1000, 0.01)
+    
+    // Hide top UI boss health bar during final stand (only show above-head bar)
+    const uiScene = this.scene.get("UIScene")
+    if (uiScene) {
+      uiScene.hideBossHealthBar()
+    }
+    
+    console.log('🔥 FINAL STAND - SURVIVE 60 SECONDS! DODGE EVERYTHING! 🔥')
   }
   
   spawnHolyBin(x, y) {
+    // Ensure we only spawn once
+    if (this.holyBin && this.holyBin.active) {
+      console.warn('⚠️ Holy bin already spawned!')
+      return
+    }
+    
+    console.log('🏺 Spawning holy bin at:', x, y)
+    
     // Create the holy recycling bin
     this.holyBin = new HolyRecyclingBin(this, x, y)
     
@@ -403,17 +530,173 @@ export class Level_5_5_Boss extends Phaser.Scene {
     
     // Add overlap with player for interaction
     this.physics.add.overlap(this.player, this.holyBin, this.playerTouchHolyBin, null, this)
+    
+    console.log('✅ Holy bin spawned successfully')
+  }
+  
+  showHeavenDoorsAndTransition() {
+    console.log('🚪 Showing Heaven Doors animation!')
+    
+    // Show doors in center of camera view
+    const centerX = this.cameras.main.scrollX + this.cameras.main.width / 2
+    const centerY = this.cameras.main.scrollY + this.cameras.main.height / 2
+    
+    // Create heaven doors sprite in center
+    let doorsSprite
+    if (this.textures.exists('heaven_doors')) {
+      doorsSprite = this.add.sprite(centerX, centerY, 'heaven_doors', 0)
+      
+      // Play opening animation
+      if (!this.anims.exists('heaven_doors_open')) {
+        this.anims.create({
+          key: 'heaven_doors_open',
+          frames: this.anims.generateFrameNumbers('heaven_doors', { start: 0, end: 35 }),
+          frameRate: 20,
+          repeat: 0
+        })
+      }
+      doorsSprite.play('heaven_doors_open')
+    } else {
+      // Fallback text
+      doorsSprite = this.add.text(centerX, centerY, '🚪 HEAVEN DOORS 🚪', {
+        fontSize: '64px',
+        fill: '#FFD700',
+        stroke: '#FFF',
+        strokeThickness: 8
+      }).setOrigin(0.5)
+    }
+    
+    doorsSprite.setScrollFactor(0)
+    doorsSprite.setDepth(5000)
+    doorsSprite.setScale(0.5)
+    
+    // Scale up doors
+    this.tweens.add({
+      targets: doorsSprite,
+      scale: 1.0,
+      duration: 1500,
+      ease: 'Back.easeOut'
+    })
+    
+    // Golden light behind doors
+    const glow = this.add.circle(centerX, centerY, 150, 0xFFD700, 0.4)
+    glow.setScrollFactor(0)
+    glow.setDepth(4999)
+    
+    this.tweens.add({
+      targets: glow,
+      scale: 3,
+      alpha: 0,
+      duration: 2000,
+      ease: 'Power2'
+    })
+    
+    // Show "ENTERING HEAVEN" text
+    const heavenText = this.add.text(centerX, centerY - 200, 'ENTERING HEAVEN', {
+      fontFamily: 'RetroPixel, monospace',
+      fontSize: '48px',
+      fill: '#FFD700',
+      stroke: '#FFF',
+      strokeThickness: 6,
+      align: 'center'
+    }).setOrigin(0.5)
+    heavenText.setScrollFactor(0)
+    heavenText.setDepth(5001)
+    heavenText.setAlpha(0)
+    
+    this.tweens.add({
+      targets: heavenText,
+      alpha: 1,
+      duration: 1000,
+      ease: 'Power2'
+    })
+    
+    // Auto-transition to HeavenEndingScene after 4 seconds (give player time to see doors & move around)
+    this.time.delayedCall(4000, () => {
+      console.log('🚪 Transitioning to Heaven...')
+      
+      // Stop all music first
+      this.sound.stopAll()
+      
+      // WHITE FLASH to cover transition
+      const transitionFlash = this.add.rectangle(
+        this.cameras.main.scrollX + this.cameras.main.width / 2,
+        this.cameras.main.scrollY + this.cameras.main.height / 2,
+        this.cameras.main.width * 2,
+        this.cameras.main.height * 2,
+        0xffffff
+      )
+      transitionFlash.setScrollFactor(0)
+      transitionFlash.setDepth(20000)
+      transitionFlash.setAlpha(0)
+      
+      // Fade to white, then transition
+      this.tweens.add({
+        targets: transitionFlash,
+        alpha: 1,
+        duration: 800,
+        ease: 'Power2',
+        onComplete: () => {
+          console.log('✅ White flash complete, starting heaven scene...')
+          
+          try {
+            this.scene.stop("UIScene")
+            console.log('  - UIScene stopped')
+            
+            this.scene.stop()
+            console.log('  - Boss scene stopped')
+            
+            console.log('  - About to start HeavenEndingScene...')
+            this.scene.start("HeavenEndingScene")
+            console.log('  - HeavenEndingScene start() called!')
+          } catch (error) {
+            console.error('❌ ERROR during scene transition:', error)
+            console.error('Error stack:', error.stack)
+          }
+        }
+      })
+    })
   }
   
   playerTouchHolyBin(player, holyBin) {
-    if (holyBin.canInteract) {
-      holyBin.interact(player)
+    if (!holyBin.canInteract) return
+    
+    // FAKE OUT! Trigger final stand instead of victory
+    this.triggerFinalStandFromBin(holyBin)
+  }
+  
+  spawnAirStrike() {
+    if (!this.player || !this.player.active) return
+    
+    // Target near the player (with some randomness for dodgeability)
+    const offsetX = Phaser.Math.Between(-200, 200)
+    const offsetY = Phaser.Math.Between(-100, 100)
+    const strikeX = this.player.x + offsetX
+    const strikeY = this.player.y + offsetY
+    
+    // Clamp to map bounds
+    const clampedX = Phaser.Math.Clamp(strikeX, 100, this.mapWidth - 100)
+    const clampedY = Phaser.Math.Clamp(strikeY, 100, this.mapHeight - 100)
+    
+    console.log('🎯 Boss calling air strike at:', clampedX, clampedY)
+    
+    const airStrike = new AirStrike(this, clampedX, clampedY)
+    this.airStrikes.push(airStrike)
+    
+    // Play warning sound
+    if (this.sound) {
+      this.sound.play('throw_item_sound', { volume: 0.5 })
     }
   }
 
   update(time, delta) {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
-      this.returnToMenu()
+      openPauseMenu(this)
+      return
+    }
+    
+    // Don't update boss if it's dead/inactive
+    if (this.boss && !this.boss.active) {
       return
     }
 
@@ -445,38 +728,36 @@ export class Level_5_5_Boss extends Phaser.Scene {
     }
 
     if (this.player && this.player.active) {
+      // Player should ALWAYS be able to move (even during survival mode)
       this.player.update(mergedControls, this.spaceKey, this.shiftKey, 999, delta)
     }
 
     if (this.boss && this.boss.active) {
       this.boss.update(delta, this.player)
       
-      // Update all poison blobs
-      this.poisonBlobs.getChildren().forEach(blob => {
-        if (blob && blob.active && blob.update) {
-          blob.update(delta, this.player)
-        }
-      })
-      
-      // Boss spawns poison blobs rarely - every 15 seconds
-      this.lastPoisonSpawnTime += delta
-      if (this.lastPoisonSpawnTime >= this.poisonSpawnCooldown) {
-        this.lastPoisonSpawnTime = 0
-        this.spawnPoisonBlob()
-      }
-    }
-    
-    // Handle poison damage over time
-    if (this.playerPoisoned && this.player && this.player.active) {
-      this.poisonDamageTimer += delta
-      
-      if (this.poisonDamageTimer >= this.poisonDamageInterval) {
-        this.poisonDamageTimer = 0
-        const newHealth = this.player.takeDamage(10)  // 10 poison damage per second
-        const uiScene = this.scene.get("UIScene")
-        if (uiScene) uiScene.updateHealth(newHealth)
-      }
-    }
+       // DON'T update top UI boss health bar - we only show health bar above boss's head
+       
+       // Spawn air strikes occasionally (MUCH more frequent during final stand)
+       this.lastAirStrikeTime += delta
+       const airStrikeCooldown = this.survivalMode ? 5000 : this.airStrikeCooldown
+       const airStrikeChance = this.survivalMode ? 1.0 : this.airStrikeChance // 100% during final stand!
+       
+       if (this.lastAirStrikeTime >= airStrikeCooldown) {
+         if (Math.random() < airStrikeChance) {
+           this.spawnAirStrike()
+         }
+         this.lastAirStrikeTime = 0
+       }
+     }
+     
+     // Update all active air strikes
+     this.airStrikes = this.airStrikes.filter(strike => {
+       if (strike && strike.active) {
+         strike.update()
+         return true
+       }
+       return false
+     })
     
     // Update homing projectiles
     if (this.bossProjectiles && this.player && this.player.active) {
@@ -497,6 +778,11 @@ export class Level_5_5_Boss extends Phaser.Scene {
     if (this.holyBin && this.holyBin.active) {
       this.holyBin.update()
     }
+    
+    // Update heaven doors if it exists
+    if (this.heavenDoors && this.heavenDoors.active) {
+      this.heavenDoors.update()
+    }
 
     if (this.player && this.player.y > this.mapHeight + 100) {
       this.sound.stopAll()
@@ -504,22 +790,13 @@ export class Level_5_5_Boss extends Phaser.Scene {
       this.scene.restart()
     }
 
-    // Check if music reached 2-minute mark OR boss health reaches 0 - trigger Final Stand!
-    const currentMusicTime = this.bossMusic ? this.bossMusic.seek : 0
-    const twoMinutesMark = 120 // 2 minutes in seconds
+    // Note: Final stand is now triggered by touching the holy bin (fake out!)
     
-    if (!this.finalStandTriggered && this.boss && this.boss.active) {
-      // Trigger at 2 minutes OR when boss health reaches 0
-      if (currentMusicTime >= twoMinutesMark || this.boss.health <= 0) {
-        this.triggerFinalStand()
-      }
-    }
-    
-    // During final stand, check if music has played long enough or ended
+    // During final stand, check if 60 seconds have passed
     if (this.survivalMode) {
-      const musicTime = this.bossMusic.seek * 1000 // Convert to milliseconds
-      const totalDuration = this.bossMusic.duration * 1000
-      const timeRemaining = Math.max(0, totalDuration - musicTime)
+      const elapsedTime = this.time.now - this.finalStandStartTime
+      const survivalDuration = 60000 // 60 seconds
+      const timeRemaining = Math.max(0, survivalDuration - elapsedTime)
       
       // Update survival timer
       if (this.survivalTimerText) {
@@ -527,21 +804,60 @@ export class Level_5_5_Boss extends Phaser.Scene {
         this.survivalTimerText.setText(`SURVIVE: ${seconds}s`)
       }
       
-      // Boss dies at end of song or if player survives long enough
-      if (!this.bossMusic.isPlaying || musicTime >= totalDuration) {
+      // Boss dies after 60 seconds
+      if (elapsedTime >= survivalDuration) {
         if (this.boss && this.boss.active && !this.endingTriggered) {
           this.endingTriggered = true
           
-          // Clear timer text
-          if (this.survivalTimerText) {
-            this.survivalTimerText.destroy()
-            this.survivalTimerText = null
+           // Clear timer text
+           if (this.survivalTimerText) {
+             this.survivalTimerText.destroy()
+             this.survivalTimerText = null
+           }
+           
+           // END SURVIVAL MODE IMMEDIATELY - BEFORE killing boss
+           this.survivalMode = false
+           console.log('✅✅✅ Survival mode ENDED - player can move!')
+           console.log('   🎮 YOU CAN WALK AROUND NOW! Controls restored!')
+           
+           // Kill the boss
+           this.boss.health = 0
+           this.boss.die()
+           
+           // Explicitly reset player state RIGHT NOW
+           if (this.player && this.player.body) {
+             this.player.body.setVelocity(0, 0)
+             this.player.isInvulnerable = false
+             this.player.isThrowingWaste = false
+             
+             // Deactivate sword and shield if active
+             if (this.player.shield && this.player.shield.visible) {
+               this.player.deactivateShield()
+             }
+             if (this.player.sword && this.player.sword.visible) {
+               this.player.sword.setVisible(false)
+               if (this.player.sword.body) {
+                 this.player.sword.body.enable = false
+               }
+             }
+             
+             console.log('✅ Player velocity reset and all states cleared')
+             console.log('   - survivalMode:', this.survivalMode)
+             console.log('   - player.active:', this.player.active)
+             console.log('   - player.isInvulnerable:', this.player.isInvulnerable)
+           }
+          
+          // Stop boss music
+          if (this.bossMusic) {
+            this.bossMusic.stop()
           }
           
-          this.boss.health = 0
-          this.boss.die()
+          // Play victory sound
+          if (this.sound) {
+            this.sound.play("level_complete_sound", { volume: 0.5 })
+          }
           
-          // WHITE FLASH EFFECT → HEAVEN ENDING
+          // WHITE FLASH and show heaven doors briefly, then auto-transition
           this.time.delayedCall(1500, () => {
             const whiteFlash = this.add.rectangle(
               this.cameras.main.scrollX + this.cameras.main.width / 2,
@@ -554,18 +870,17 @@ export class Level_5_5_Boss extends Phaser.Scene {
             whiteFlash.setDepth(10000)
             whiteFlash.setAlpha(0)
             
-            // Flash white, then transition to heaven scene
+            // Flash white
             this.tweens.add({
               targets: whiteFlash,
               alpha: 1,
               duration: 1000,
               ease: 'Power2',
+              yoyo: true,
               onComplete: () => {
-                this.time.delayedCall(500, () => {
-                  this.sound.stopAll()
-                  this.scene.stop("UIScene")
-                  this.scene.start("HeavenEndingScene")
-                })
+                // Show heaven doors briefly in center of screen
+                this.showHeavenDoorsAndTransition()
+                whiteFlash.destroy()
               }
             })
           })
@@ -573,10 +888,14 @@ export class Level_5_5_Boss extends Phaser.Scene {
       }
     }
     
-    // Check if boss is defeated (after final stand)
-    if (this.boss && !this.boss.active && !this.bossDefeatedFlag) {
-      this.bossDefeatedFlag = true
-      this.bossDefeated()
+    // NEW MECHANIC: Check if boss health is LOW (trigger final stand BEFORE death)
+    if (this.boss && this.boss.active && !this.survivalMode && !this.finalStandTriggered) {
+      const healthPercent = (this.boss.health / this.boss.maxHealth) * 100
+      
+      if (healthPercent <= 25) {  // When boss reaches 25% health
+        console.log('⚠️ Boss health critical! Triggering FINAL STAND! Health:', this.boss.health)
+        this.triggerFinalStand()
+      }
     }
   }
 

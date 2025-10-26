@@ -1,6 +1,7 @@
 // Phaser loaded globally
 import { screenSize } from './gameConfig.js'
 import { RecyclingPlayer } from './RecyclingPlayer.js'
+import { HolyRecyclingBin } from './HolyRecyclingBin.js'
 
 export class HeavenEndingScene extends Phaser.Scene {
   constructor() {
@@ -8,25 +9,60 @@ export class HeavenEndingScene extends Phaser.Scene {
   }
 
   create() {
+    console.log('🌟🌟🌟 HEAVEN SCENE CREATE CALLED! 🌟🌟🌟')
+    console.log('Scene key:', this.scene.key)
+    console.log('Scene is active:', this.scene.isActive())
+    
+    try {
+    
     const screenWidth = screenSize.width.value
     const screenHeight = screenSize.height.value
     
     this.mapWidth = 30 * 64
     this.mapHeight = 15 * 64
     
-    // Heavenly white/gold gradient background
-    const bg = this.add.rectangle(0, 0, this.mapWidth, this.mapHeight, 0xffffff)
-    bg.setOrigin(0, 0)
-    bg.setAlpha(0.95)
+    // White overlay for fade-in transition
+    const whiteOverlay = this.add.rectangle(
+      screenWidth / 2,
+      screenHeight / 2,
+      screenWidth * 2,
+      screenHeight * 2,
+      0xffffff
+    )
+    whiteOverlay.setScrollFactor(0)
+    whiteOverlay.setDepth(10000)
+    whiteOverlay.setAlpha(1)  // Start fully white
     
-    // Add golden particles/rays
-    this.createHeavenlyParticles()
+    // Fade from white
+    this.tweens.add({
+      targets: whiteOverlay,
+      alpha: 0,
+      duration: 1500,
+      ease: 'Power2',
+      onComplete: () => whiteOverlay.destroy()
+    })
     
-    // Beautiful saved city background - peaceful streets
-    const cityBg = this.add.image(this.mapWidth / 2, this.mapHeight / 2, 'city_background')
-    cityBg.setScale(1.5)
-    cityBg.setAlpha(0.6)
-    cityBg.setTint(0xffffee) // Warm golden glow
+    // Use heaven background if it exists, otherwise fallback
+    if (this.textures.exists('heaven_background')) {
+      const bg = this.add.image(this.mapWidth / 2, this.mapHeight / 2, 'heaven_background')
+      
+      // Scale to cover the map area
+      const scaleX = this.mapWidth / bg.width
+      const scaleY = this.mapHeight / bg.height
+      const scale = Math.max(scaleX, scaleY)
+      bg.setScale(scale)
+      
+      console.log('✅ Heaven background loaded for ending scene!')
+    } else {
+      // Fallback: Heavenly white/gold gradient background
+      console.warn('⚠️ Heaven background not found, using fallback')
+      const bg = this.add.rectangle(0, 0, this.mapWidth, this.mapHeight, 0xffffff)
+      bg.setOrigin(0, 0)
+      bg.setAlpha(0.95)
+      
+      // Add golden particles/rays
+      this.createHeavenlyParticles()
+    }
     
     // Create flat ground with city tiles
     this.createFlatGround()
@@ -105,11 +141,31 @@ export class HeavenEndingScene extends Phaser.Scene {
       ease: 'Sine.easeInOut'
     })
     
-    // Play choir processional music
-    this.heavenMusic = this.sound.add('heaven_choir_theme', { volume: 0.6, loop: true })
+    // Play heaven music
+    console.log('🎵 Starting heaven music...')
+    
+    this.sound.stopAll()
+    
+    this.heavenMusic = this.sound.add('heaven_music_theme', { volume: 0.5, loop: true })
     this.heavenMusic.play()
     
+    // Verify music is playing
+    this.heavenMusic.once('play', () => {
+      console.log('✅ Heaven music (heaven_music_theme) is now playing!')
+    })
+    
+    this.heavenMusic.once('looped', () => {
+      console.log('🔄 Heaven music looped')
+    })
+    
     this.reachedBin = false
+    
+    console.log('✅ Heaven scene setup complete!')
+    
+    } catch (error) {
+      console.error('❌ ERROR in Heaven scene create:', error)
+      console.error('Error stack:', error.stack)
+    }
   }
   
   createFlatGround() {
@@ -136,27 +192,58 @@ export class HeavenEndingScene extends Phaser.Scene {
   }
   
   createHolyBin() {
-    // Holy recycle bin at the end
+    // Holy recycle bin at the end (using proper animated sprite)
     const binX = 27 * 64
     const binY = 12 * 64
     
-    this.holyBin = this.add.sprite(binX, binY, 'holy_bin_sheet', 0)
-    this.holyBin.setScale(1.5)
+    this.holyBin = new HolyRecyclingBin(this, binX, binY)
+    this.holyBin.setScale(0.8)  // Reasonable size
     
-    // Golden glow effect
-    const glow = this.add.circle(binX, binY, 80, 0xFFD700, 0.3)
+    // Collide with ground
+    this.physics.add.collider(this.holyBin, this.groundTiles.getChildren())
+    
+    // Player can interact with bin
+    this.physics.add.overlap(this.player, this.holyBin, this.playerTouchHolyBin, null, this)
+  }
+  
+  playerTouchHolyBin(player, holyBin) {
+    if (this.reachedBin) return  // Already triggered
+    
+    this.reachedBin = true
+    console.log('🏆 Player touched holy bin - showing stats!')
+    
+    // Play victory sound
+    if (this.sound) {
+      this.sound.play('level_complete_sound', { volume: 0.8 })
+    }
+    
+    // WHITE FLASH
+    const whiteFlash = this.add.rectangle(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2,
+      this.cameras.main.width * 2,
+      this.cameras.main.height * 2,
+      0xffffff
+    )
+    whiteFlash.setScrollFactor(0)
+    whiteFlash.setDepth(10000)
+    whiteFlash.setAlpha(0)
+    
+    // Flash white
     this.tweens.add({
-      targets: glow,
-      alpha: 0.6,
-      scale: 1.2,
-      duration: 2000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
+      targets: whiteFlash,
+      alpha: 1,
+      duration: 1000,
+      ease: 'Power2',
+      onComplete: () => {
+        // Stop all music
+        this.sound.stopAll()
+        
+        // Launch GameCompleteStatsScene
+        this.scene.stop()
+        this.scene.start('GameCompleteStatsScene')
+      }
     })
-    
-    // Overlap detection
-    this.physics.add.existing(this.holyBin, true)
   }
   
   createHeavenlyParticles() {
@@ -202,18 +289,7 @@ export class HeavenEndingScene extends Phaser.Scene {
       }
       this.player.update(mergedControls, this.spaceKey, this.shiftKey, 999, delta)
       
-      // Check if reached holy bin
-      if (!this.reachedBin && this.holyBin) {
-        const distance = Phaser.Math.Distance.Between(
-          this.player.x, this.player.y,
-          this.holyBin.x, this.holyBin.y
-        )
-        
-        if (distance < 100) {
-          this.reachedBin = true
-          this.showVictoryMessage()
-        }
-      }
+      // Holy bin interaction handled by physics overlap callback
     }
     
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
@@ -222,51 +298,5 @@ export class HeavenEndingScene extends Phaser.Scene {
     }
   }
   
-  showVictoryMessage() {
-    const screenWidth = screenSize.width.value
-    const screenHeight = screenSize.height.value
-    
-    // "You Made It!" message
-    const victoryText = this.add.text(screenWidth / 2, screenHeight / 2, 'YOU MADE IT HOME!', {
-      fontFamily: 'Arial Black',
-      fontSize: '72px',
-      color: '#FFD700',
-      stroke: '#FFF',
-      strokeThickness: 6,
-      align: 'center'
-    })
-    victoryText.setOrigin(0.5)
-    victoryText.setScrollFactor(0)
-    victoryText.setAlpha(0)
-    victoryText.setDepth(1000)
-    
-    this.tweens.add({
-      targets: victoryText,
-      alpha: 1,
-      duration: 1500,
-      ease: 'Power2'
-    })
-    
-    // Add press SPACE to continue after delay
-    this.time.delayedCall(3000, () => {
-      const continueText = this.add.text(screenWidth / 2, screenHeight / 2 + 100, 
-        'Press SPACE to Return to Menu', {
-        fontFamily: 'Arial',
-        fontSize: '32px',
-        color: '#ffffff',
-        stroke: '#000',
-        strokeThickness: 3
-      })
-      continueText.setOrigin(0.5)
-      continueText.setScrollFactor(0)
-      continueText.setDepth(1000)
-      
-      // Enable SPACE to continue
-      this.input.keyboard.on('keydown-SPACE', () => {
-        this.sound.stopAll()
-        this.scene.start("TitleScreen")
-      })
-    })
-  }
 }
 

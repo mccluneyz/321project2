@@ -1,5 +1,6 @@
 // Phaser loaded globally
 import { playerConfig } from './gameConfig.js'
+import { gameStats } from './GameStats.js'
 
 export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
@@ -29,6 +30,7 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
     this.sword = null
     this.swordCooldown = 500  // 500ms cooldown between swings
     this.lastSwordTime = 0
+    this.swordHitTargets = new Set()  // Track what's been hit this swing
     this.createSword()
     
     // Glider properties
@@ -110,13 +112,14 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
     const shieldTexture = this.scene.textures.exists('player_shield') ? 'player_shield' : 'recyclable_plastic_bottle'
     
     this.shield = this.scene.physics.add.sprite(this.x, this.y, shieldTexture)
-    this.shield.setScale(0.15)  // Much smaller - just in front of character
+    this.shield.setScale(0.15)  // Visual scale - just in front of character
     this.shield.setDepth(this.depth + 1)  // Render in front of player
     this.shield.setVisible(false)  // Hidden by default
     this.shield.setAlpha(0.9)  // Slightly transparent
     this.shield.body.setAllowGravity(false)  // Shield doesn't fall
     this.shield.body.setImmovable(true)  // Shield is solid
-    this.shield.body.setSize(60, 80)  // Collision box
+    // MUCH LARGER hitbox to block ALL projectiles in front of player
+    this.shield.body.setSize(100, 180)  // Wide and tall to cover entire player
     this.shield.body.enable = false  // Disabled by default
   }
   
@@ -356,9 +359,9 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
   updateShieldPosition() {
     if (!this.shield) return
     
-    // Position shield in front of player (closer)
-    const offsetX = this.facingRight ? 35 : -35  // 35 pixels in front
-    const offsetY = -40  // Slightly above center
+    // Position shield in front of player to block ALL frontal attacks
+    const offsetX = this.facingRight ? 50 : -50  // Further in front to catch projectiles early
+    const offsetY = -60  // Centered on player's body
     
     this.shield.setPosition(this.x + offsetX, this.y + offsetY)
     this.shield.setFlipX(!this.facingRight)  // Flip shield with player
@@ -390,6 +393,9 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
     // Can only activate if player has picked up the shield
     if (!this.hasShield) return
     
+    // Can't shield while sword is active
+    if (this.swordActive) return
+    
     this.shieldActive = true
     if (this.shield) {
       this.shield.setVisible(true)
@@ -401,7 +407,9 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
     this.shieldActive = false
     if (this.shield) {
       this.shield.setVisible(false)
-      this.shield.body.enable = false  // Disable collision
+      if (this.shield.body) {
+        this.shield.body.enable = false  // Disable collision
+      }
     }
   }
   
@@ -413,12 +421,16 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
     // Can only swing if player has picked up the sword
     if (!this.hasSword) return
     
+    // Can't swing while shield is active
+    if (this.shieldActive) return
+    
     // Check cooldown
     const now = Date.now()
     if (now - this.lastSwordTime < this.swordCooldown) return
     
     this.lastSwordTime = now
     this.swordActive = true
+    this.swordHitTargets.clear()  // Clear hit tracking for new swing
     
     if (this.sword) {
       this.sword.setVisible(true)
@@ -449,12 +461,22 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
   
   deactivateSword() {
     this.swordActive = false
+    this.swordHitTargets.clear()  // Clear hit tracking
     if (this.sword) {
       this.sword.setVisible(false)
       this.sword.body.enable = false  // Disable collision
       this.sword.stop()  // Stop animation
       this.sword.setFrame(0)  // Reset to first frame
     }
+  }
+  
+  canSwordHit(target) {
+    // Check if this target has already been hit in this swing
+    if (this.swordHitTargets.has(target)) {
+      return false
+    }
+    this.swordHitTargets.add(target)
+    return true
   }
   
   activateGlider() {
@@ -478,13 +500,16 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
       console.log('❌ Glider sprite not found!')
     }
     
-    // Slow fall speed while gliding
-    this.body.setGravityY(playerConfig.gravityY.value * 0.2)  // 20% gravity
-    
-    // Limit fall speed
-    if (this.body.velocity.y > 100) {
-      this.body.setVelocityY(100)
+    // Only slow fall - don't reduce gravity (that makes you float up)
+    // Instead, just cap the downward velocity
+    if (this.body.velocity.y > 0) {
+      // Falling down - slow it to a gentle glide
+      const maxGlideSpeed = 100  // Slow fall speed
+      if (this.body.velocity.y > maxGlideSpeed) {
+        this.body.setVelocityY(maxGlideSpeed)
+      }
     }
+    // If moving up, don't interfere - let gravity naturally slow it down
   }
   
   deactivateGlider() {
@@ -495,8 +520,7 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
       this.glider.setFrame(0)  // Reset to first frame
     }
     
-    // Restore normal gravity
-    this.body.setGravityY(playerConfig.gravityY.value)
+    // No need to restore gravity since we never changed it
   }
   
   spawnDoubleJumpCloud() {
@@ -508,41 +532,28 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
       return
     }
     
-    // Create cloud animation if it doesn't exist
-    if (!this.scene.anims.exists('cloud_puff')) {
-      console.log('☁️ Creating cloud_puff animation (5x5 grid = 25 frames)')
-      try {
-        this.scene.anims.create({
-          key: 'cloud_puff',
-          frames: this.scene.anims.generateFrameNumbers('double_jump_cloud', { start: 0, end: 24 }),
-          frameRate: 40,  // Fast puff animation
-          repeat: 0
-        })
-        console.log('✅ cloud_puff animation created successfully')
-      } catch (error) {
-        console.error('❌ Failed to create cloud animation:', error)
-        return
-      }
-    }
+    // No animation needed - it's a single image now
     
     // Create cloud sprite at player's feet
     const cloudY = this.y + 40  // Position at player's feet
     
     console.log('☁️ Creating cloud sprite at:', this.x, cloudY)
     
-    const cloud = this.scene.add.sprite(this.x, cloudY, 'double_jump_cloud', 0)
+    const cloud = this.scene.add.image(this.x, cloudY, 'double_jump_cloud')
     cloud.setScale(0.4)  // Smaller, more appropriate size
     cloud.setDepth(this.depth - 1)  // Just behind player
     cloud.setAlpha(1.0)  // Fully visible
     cloud.setOrigin(0.5, 0.5)  // Center origin
     
-    // Play cloud animation
-    cloud.play('cloud_puff')
-    
-    // Destroy cloud after animation completes
-    cloud.once('animationcomplete', () => {
-      console.log('☁️ Cloud animation complete, destroying')
-      cloud.destroy()
+    // Fade out and destroy after a short time (since it's a static image)
+    this.scene.tweens.add({
+      targets: cloud,
+      alpha: 0,
+      duration: 300,
+      onComplete: () => {
+        console.log('☁️ Cloud faded out, destroying')
+        cloud.destroy()
+      }
     })
     
     // Fallback destroy in case animation doesn't complete
@@ -627,6 +638,10 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
   takeDamage(amount) {
     if (this.isInvulnerable) return this.health
     
+    // Track damage taken for stats
+    gameStats.addDamageTaken(amount)
+    console.log('🩸 Player took damage:', amount, '| Total damage taken:', gameStats.damageTaken)
+    
     this.health -= amount
     this.isInvulnerable = true
     
@@ -656,11 +671,15 @@ export class RecyclingPlayer extends Phaser.Physics.Arcade.Sprite {
   }
   
   die() {
+    // Track death for stats
+    gameStats.addDeath()
+    console.log('💀 Player died! Total deaths:', gameStats.deaths)
+    
     // Handle death
     this.body.setVelocity(0, 0)
     
-    // Destroy shield
-    if (this.shield) {
+    // Safely destroy shield
+    if (this.shield && this.shield.active) {
       this.shield.destroy()
     }
     

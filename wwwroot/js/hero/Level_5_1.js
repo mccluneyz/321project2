@@ -3,6 +3,7 @@ import { screenSize } from './gameConfig.js'
 import { RecyclingPlayer } from './RecyclingPlayer.js'
 import { PollutionEnemy } from './PollutionEnemy.js'
 import { LevelManager } from './LevelManager.js'
+import { autoGrantItems } from './ItemProgression.js'
 
 export class Level_5_1 extends Phaser.Scene {
   constructor() {
@@ -77,6 +78,9 @@ export class Level_5_1 extends Phaser.Scene {
     this.physics.add.collider(this.player, this.groundLayer)
     this.player.setCollideWorldBounds(true)
     this.player.body.onWorldBounds = true
+    
+    // Auto-grant all items for world 5 (wasteland)
+    autoGrantItems(this, this.player)
   }
 
   createDecorations() {

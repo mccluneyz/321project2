@@ -5,6 +5,7 @@ import { PollutionEnemy } from './PollutionEnemy.js'
 import { LevelManager } from './LevelManager.js'
 import { autoGrantItems } from './ItemProgression.js'
 import { MusicManager } from './MusicManager.js'
+import { openPauseMenu } from './PauseHelper.js'
 
 export class Level1Scene extends Phaser.Scene {
   constructor() {
@@ -213,9 +214,9 @@ export class Level1Scene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    // ESC to menu
+    // ESC to open pause menu
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
-      this.returnToMenu()
+      openPauseMenu(this)
       return
     }
 

@@ -67,13 +67,24 @@ export class GameOverUIScene extends Phaser.Scene {
   }
 
   restartLevel() {
+    console.log('🔄 Restarting level:', this.currentLevelKey)
+    
     // Stop all music
     this.sound.stopAll()
     
-    // Stop and restart current level
-    this.scene.stop(this.currentLevelKey)
-    this.scene.stop("UIScene")
+    // Stop this scene first
     this.scene.stop()
-    this.scene.start(this.currentLevelKey)
+    
+    // Stop UI scene
+    this.scene.stop("UIScene")
+    
+    // Stop the level completely
+    this.scene.stop(this.currentLevelKey)
+    
+    // Wait a moment for cleanup, then restart
+    setTimeout(() => {
+      console.log('▶️ Starting level:', this.currentLevelKey)
+      this.scene.start(this.currentLevelKey)
+    }, 100)
   }
 }

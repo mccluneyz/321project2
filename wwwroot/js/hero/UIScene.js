@@ -241,15 +241,27 @@ export class UIScene extends Phaser.Scene {
     this.bossHealthBar.setVisible(false)
   }
 
-  updateBossHealth(health, maxHealth) {
+  updateBossHealth(health, maxHealth, isInvincible = false) {
     const healthPercentage = (health / maxHealth) * 100
     
     // Clear and redraw boss health bar
     this.bossHealthBar.clear()
     
-    // Boss health is always red
-    this.bossHealthBar.fillStyle(0xff0000)
+    // Boss health is always red (or gold if invincible)
+    const barColor = isInvincible ? 0xFFD700 : 0xff0000
+    this.bossHealthBar.fillStyle(barColor)
     this.bossHealthBar.fillRect(this.bossBarX + 2, 52, ((this.bossBarWidth - 4) * healthPercentage / 100), 21)
+    
+    // Update boss text to show INVINCIBLE
+    if (this.bossNameText) {
+      if (isInvincible) {
+        this.bossNameText.setText('POLLUTION BOSS - INVINCIBLE')
+        this.bossNameText.setColor('#FFD700')
+      } else {
+        this.bossNameText.setText('POLLUTION BOSS')
+        this.bossNameText.setColor('#ff0000')
+      }
+    }
     
     // Show boss health bar if not visible
     if (!this.bossHealthBar.visible) {

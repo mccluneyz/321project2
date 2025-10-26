@@ -13,6 +13,17 @@ namespace RecycleRank.Controllers
         public int TimeTaken { get; set; }
     }
 
+    public class SaveGameScoreRequest
+    {
+        public int Score { get; set; }
+        public string Grade { get; set; } = "";
+        public int EnemiesKilled { get; set; }
+        public int DamageDealt { get; set; }
+        public int DamageTaken { get; set; }
+        public int Deaths { get; set; }
+        public int PlayTime { get; set; } // in seconds
+    }
+
     public class GameController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -169,6 +180,72 @@ namespace RecycleRank.Controllers
             });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SaveGameScore([FromBody] SaveGameScoreRequest request)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Please log in" });
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var gameSession = await _context.GameSessions
+                .FirstOrDefaultAsync(gs => gs.UserId == userId);
+
+            if (gameSession == null)
+            {
+                gameSession = new GameSession
+                {
+                    UserId = userId.Value,
+                    LastPlayedAt = DateTime.Now,
+                    PlaysToday = 0,
+                    TotalGamesPlayed = 0,
+                    HighScore = 0,
+                    MaxDistance = 0,
+                    TotalPointsEarned = 0
+                };
+                _context.GameSessions.Add(gameSession);
+            }
+
+            // Award coins based on score (score = coins, max 120)
+            var coinsEarned = request.Score;
+            await _pointsService.AwardPointsAsync(userId.Value, coinsEarned);
+
+            // Update game session stats
+            gameSession.LastPlayedAt = DateTime.Now;
+            gameSession.TotalGamesPlayed++;
+            gameSession.TotalPointsEarned += coinsEarned;
+            
+            // Update high score if new best
+            bool newHighScore = false;
+            if (request.Score > gameSession.HighScore)
+            {
+                gameSession.HighScore = request.Score;
+                newHighScore = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Reload user to get updated points
+            await _context.Entry(user).ReloadAsync();
+
+            return Json(new
+            {
+                success = true,
+                message = $"Victory! You earned {coinsEarned} coins!",
+                coinsEarned = coinsEarned,
+                newTotalCoins = user.Points,
+                newHighScore = newHighScore,
+                grade = request.Grade
+            });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetLeaderboard()
         {
@@ -176,15 +253,14 @@ namespace RecycleRank.Controllers
             {
                 var leaderboard = await _context.GameSessions
                     .Include(gs => gs.User)
-                    .Where(gs => gs.MaxDistance > 0)
-                    .OrderByDescending(gs => gs.MaxDistance)
-                    .ThenByDescending(gs => gs.HighScore)
+                    .Where(gs => gs.HighScore > 0)
+                    .OrderByDescending(gs => gs.HighScore)
                     .Take(10)
                     .Select(gs => new
                     {
                         username = gs.User.Name,
-                        distance = gs.MaxDistance,
-                        score = gs.HighScore
+                        score = gs.HighScore,
+                        gamesPlayed = gs.TotalGamesPlayed
                     })
                     .ToListAsync();
 
@@ -205,4 +281,5 @@ namespace RecycleRank.Controllers
         }
     }
 }
+
 

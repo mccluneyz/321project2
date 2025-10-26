@@ -19,7 +19,7 @@ export class Level_4_5_Boss extends Phaser.Scene {
     // this.createDecorations() // Disabled - ocean_debris assets not loaded
     this.createPlayer()
     this.createBoss()
-    this.createFloatingPlatforms()
+    // this.createFloatingPlatforms() // REMOVED - platforms not needed for boss fight
     this.setupCollisions()
     
     this.mapHeight = 15 * 64
@@ -148,7 +148,8 @@ export class Level_4_5_Boss extends Phaser.Scene {
     if (this.player && this.player.sword) {
       this.physics.add.overlap(this.player.sword, this.boss, (sword, boss) => {
         if (boss.isDying || !this.player.swordActive) return
-        boss.takeDamage(30, true)  // true = isSwordDamage
+        if (!this.player.canSwordHit(boss)) return  // Prevent multi-hit
+        boss.takeDamage(15, true)  // Reduced sword damage
         if (this.sound) this.sound.play("boss_hit_sound", { volume: 0.3 })
       }, null, this)
     }
@@ -242,11 +243,10 @@ export class Level_4_5_Boss extends Phaser.Scene {
   }
   
   spawnDoubleJumpPickup(x, y) {
-    // Create cloud sprite on ground
+    // Create cloud image on ground (single image, not spritesheet)
     const cloudTexture = this.textures.exists('double_jump_cloud') ? 'double_jump_cloud' : 'recyclable_plastic_bottle'
-    const isSheet = this.textures.exists('double_jump_cloud')
     
-    this.cloudPickup = this.physics.add.sprite(x, y, cloudTexture, isSheet ? 0 : undefined)
+    this.cloudPickup = this.physics.add.image(x, y, cloudTexture)
     this.cloudPickup.setScale(0.3)
     this.cloudPickup.body.setAllowGravity(true)
     this.cloudPickup.setDepth(10)
@@ -257,19 +257,16 @@ export class Level_4_5_Boss extends Phaser.Scene {
     // Add overlap with player to pick it up
     this.physics.add.overlap(this.player, this.cloudPickup, this.pickupDoubleJump, null, this)
     
-    // Create simple animation for cloud if spritesheet
-    if (isSheet && !this.anims.exists('cloud_pickup_float')) {
-      this.anims.create({
-        key: 'cloud_pickup_float',
-        frames: this.anims.generateFrameNumbers('double_jump_cloud', { start: 0, end: 4 }),
-        frameRate: 8,
-        repeat: -1
+    // Create floating tween effect (since it's a single image now)
+    if (cloudTexture === 'double_jump_cloud') {
+      this.tweens.add({
+        targets: this.cloudPickup,
+        y: this.cloudPickup.y - 10,
+        duration: 1000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
       })
-    }
-    
-    // Play animation if available
-    if (isSheet) {
-      this.cloudPickup.play('cloud_pickup_float')
     }
     
     // Add floating tween

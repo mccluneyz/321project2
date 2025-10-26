@@ -86,6 +86,7 @@ export class Level_1_5_Boss extends Phaser.Scene {
     // Boss spawns higher and falls to ground
     const boss = new PollutionBoss(this, 30 * 64, 5 * 64, 'city')  // Spawn higher, will fall to ground
     boss.canShoot = false  // First boss doesn't shoot projectiles
+    boss.setScale(0.7)  // Scale down - city boss is too big
     this.enemies.add(boss)
     this.boss = boss
   }
@@ -243,6 +244,15 @@ export class Level_1_5_Boss extends Phaser.Scene {
       return
     }
     
+    // Update boss health bar in UI
+    if (this.boss && this.boss.active) {
+      const uiScene = this.scene.get("UIScene")
+      if (uiScene) {
+        uiScene.updateBossHealth(this.boss.health, this.boss.maxHealth)
+      }
+      this.boss.update(delta, this.player)
+    }
+    
     // Handle shield, sword, and glider
     if (this.player && this.player.active) {
       // Handle shield toggle with Q key
@@ -273,11 +283,7 @@ export class Level_1_5_Boss extends Phaser.Scene {
     if (this.player && this.player.active) {
       this.player.update(mergedControls, this.spaceKey, this.shiftKey, 999, delta)
     }
-    if (this.enemies) {
-      this.enemies.getChildren().forEach(enemy => {
-        if (enemy.update) enemy.update(delta, this.player)
-      })
-    }
+    // Boss update is handled above with health bar update - no need to update again
     if (this.player && this.player.y > this.mapHeight + 100) {
       this.sound.stopAll()
       this.scene.stop("UIScene")

@@ -2,11 +2,46 @@
 
 export class HolyRecyclingBin extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y, 'holy_bin_sheet', 0)
+    // Check if holy_bin exists, use fallback
+    let textureKey = 'holy_bin'
+    
+    console.log('🏺 HolyRecyclingBin: Checking for holy_bin texture...')
+    
+    if (!scene.textures.exists('holy_bin')) {
+      console.warn('⚠️ holy_bin not found, using recyclable as fallback')
+      textureKey = 'recyclable_plastic_bottle'
+    } else {
+      const texture = scene.textures.get('holy_bin')
+      const width = texture.source[0].width
+      const height = texture.source[0].height
+      console.log('✅ holy_bin found! Dimensions:', width, 'x', height)
+      
+      // If it's very large, it might be showing as a spritesheet
+      if (width > 2000 || height > 2000) {
+        console.warn('⚠️ Holy bin image is VERY LARGE - will scale down significantly')
+      }
+    }
+    
+    super(scene, x, y, textureKey, 0)
     
     // Add to scene
     scene.add.existing(this)
     scene.physics.add.existing(this)
+    
+    // Create floating animation for holy bin
+    if (textureKey === 'holy_bin' && !scene.anims.exists('holy_bin_float')) {
+      scene.anims.create({
+        key: 'holy_bin_float',
+        frames: scene.anims.generateFrameNumbers('holy_bin', { start: 0, end: 24 }),
+        frameRate: 10,
+        repeat: -1
+      })
+    }
+    
+    // Play the floating animation
+    if (textureKey === 'holy_bin') {
+      this.play('holy_bin_float')
+    }
     
     // Properties
     this.scene = scene
@@ -18,42 +53,65 @@ export class HolyRecyclingBin extends Phaser.Physics.Arcade.Sprite {
     this.body.setAllowGravity(false)
     this.body.setImmovable(true)
     
-    // Scale to be large and impressive (about 4 tiles tall)
-    const targetHeight = 256  // 4 tiles * 64px
-    const actualHeight = 200  // Frame height from spritesheet
-    this.setScale(targetHeight / actualHeight)
+    // Scale based on which texture we're using
+    let scale = 0.5
+    if (textureKey === 'holy_bin') {
+      // Scale to reasonable size (based on 1485x1800 source)
+      // We want it about 3 tiles wide (192px)
+      const targetWidth = 192  // 3 tiles * 64px
+      const actualWidth = 1485  // Source image width
+      scale = targetWidth / actualWidth
+    } else {
+      // Fallback to large recyclable
+      scale = 2.0
+    }
+    this.setScale(scale)
+    
+    // Golden glow for holy item
+    this.setTint(0xFFD700)
     
     // Set collision body
-    this.body.setSize(150, 150)
+    this.body.setSize(100, 100)
     this.setOrigin(0.5, 1.0)
     
     // Set depth to render above everything
     this.setDepth(1000)
     
-    // Create animations
-    this.createAnimations()
-    
-    // Start floating animation
-    this.play('holy_bin_float')
-    
     // Start high above, will descend
     this.y = y - 500
+    
+    // Create floating effect
+    this.createFloatingEffect()
     
     // Descend from heaven with light
     this.descendFromHeaven(x, y)
   }
   
-  createAnimations() {
-    // Only create if doesn't exist
-    if (!this.scene.anims.exists('holy_bin_float')) {
-      // Floating animation using all 25 frames
-      this.scene.anims.create({
-        key: 'holy_bin_float',
-        frames: this.scene.anims.generateFrameNumbers('holy_bin_sheet', { start: 0, end: 24 }),
-        frameRate: 12,
-        repeat: -1
-      })
+  createFloatingEffect() {
+    // Stop any animations (this was causing the crash)
+    if (this.anims) {
+      this.anims.stop()
     }
+    
+    // Since it's a static image, create a floating tween effect
+    this.scene.tweens.add({
+      targets: this,
+      y: this.y - 20,  // Float up and down
+      duration: 2000,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1
+    })
+    
+    // Gentle rotation
+    this.scene.tweens.add({
+      targets: this,
+      angle: -5,  // Rock back and forth
+      duration: 1500,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1
+    })
   }
   
   descendFromHeaven(targetX, targetY) {
@@ -201,11 +259,11 @@ export class HolyRecyclingBin extends Phaser.Physics.Arcade.Sprite {
     // Stop boss music if playing
     this.scene.sound.stopAll()
     
-    // Trigger game complete after 3 seconds
+    // Trigger game stats screen after 3 seconds
     this.scene.time.delayedCall(3000, () => {
       this.scene.scene.stop("UIScene")
       this.scene.scene.stop()
-      this.scene.scene.start("GameCompleteUIScene")
+      this.scene.scene.start("GameCompleteStatsScene")
     })
   }
   
