@@ -184,6 +184,9 @@ namespace RecycleRank.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
@@ -395,7 +398,6 @@ namespace RecycleRank.Migrations
 
                     b.Navigation("User");
                 });
-
 
             modelBuilder.Entity("RecycleRank.Models.RecyclingEvent", b =>
                 {
