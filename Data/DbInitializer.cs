@@ -7,8 +7,8 @@ namespace RecycleRank.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
-            // Ensure database is created
-            context.Database.EnsureCreated();
+            // Apply any pending migrations
+            context.Database.Migrate();
 
             // Check if data already exists
             if (context.Materials.Any())

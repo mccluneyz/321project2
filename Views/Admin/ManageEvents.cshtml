@@ -1,0 +1,287 @@
+@model IEnumerable<RecycleRank.Models.Event>
+@{
+    ViewData["Title"] = "Manage Events";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #28a745;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .event-card.inactive {
+            border-left-color: #6c757d;
+            opacity: 0.7;
+        }
+        
+        .event-header {
+            padding: 20px 20px 10px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .event-body {
+            padding: 15px 20px;
+        }
+        
+        .event-footer {
+            padding: 10px 20px 20px 20px;
+            background: #f8f9fa;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .event-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .event-description {
+            color: #495057;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .event-location {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .event-meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+        
+        .stats-row {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Navigation -->
+    <div class="page-navigation mb-4">
+        <a href="/Admin/Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Admin
+        </a>
+        <a href="/Recycling/Events" class="btn btn-outline-success">
+            <i class="fas fa-calendar me-2"></i>View Calendar
+        </a>
+    </div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1><i class="fas fa-calendar-alt me-3"></i>Manage Calendar Events</h1>
+                <p class="mb-0">Create, edit, and manage events for the Interactive Recycling Calendar</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/Admin/AddEvent" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Add New Event
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    <!-- Statistics -->
+    <div class="stats-row">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">@Model.Count()</div>
+                    <div class="stat-label">Total Events</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">@Model.Count(e => e.IsActive)</div>
+                    <div class="stat-label">Active Events</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">@Model.Count(e => e.EventDate >= DateTime.Now)</div>
+                    <div class="stat-label">Upcoming Events</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">@Model.Count(e => e.EventDate < DateTime.Now)</div>
+                    <div class="stat-label">Past Events</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Events List -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var evt in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card @(!evt.IsActive ? "inactive" : "")">
+                        <div class="event-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="event-title">@evt.Title</div>
+                                <span class="status-badge @(evt.IsActive ? "status-active" : "status-inactive")">
+                                    @(evt.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                            <div class="event-date">
+                                <i class="fas fa-calendar me-1"></i>
+                                @evt.EventDate.ToString("MMM dd, yyyy 'at' h:mm tt")
+                            </div>
+                        </div>
+                        
+                        <div class="event-body">
+                            <div class="event-description">
+                                @(evt.Description.Length > 100 ? evt.Description.Substring(0, 100) + "..." : evt.Description)
+                            </div>
+                            <div class="event-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                @evt.Location
+                            </div>
+                        </div>
+                        
+                        <div class="event-footer">
+                            <div class="event-meta mb-2">
+                                <small>
+                                    <i class="fas fa-user me-1"></i>
+                                    Created by @(evt.CreatedByUser?.Name ?? "Admin") on @evt.CreatedAt.ToString("MMM dd, yyyy")
+                                </small>
+                            </div>
+                            
+                            <div class="btn-group btn-group-sm w-100" role="group">
+                                <a href="/Admin/EditEvent/@evt.Id" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <a href="/Recycling/Events" class="btn btn-outline-success">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                                <form method="post" action="/Admin/DeleteEvent" style="display: inline;" 
+                                      onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone.');">
+                                    <input type="hidden" name="id" value="@evt.Id" />
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No Events Found</h3>
+            <p>There are no calendar events yet. Create your first event to get started!</p>
+            <a href="/Admin/AddEvent" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Add Your First Event
+            </a>
+        </div>
+    }
+</div>

@@ -107,6 +107,16 @@ namespace RecycleRank.Controllers
                 .OrderBy(e => e.EventDate)
                 .ToList();
             
+            // Check if current user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var isAdmin = false;
+            if (userId.HasValue)
+            {
+                var user = _context.Users.Find(userId.Value);
+                isAdmin = user?.IsAdmin ?? false;
+            }
+            
+            ViewBag.IsAdmin = isAdmin;
             return View(events);
         }
     }
