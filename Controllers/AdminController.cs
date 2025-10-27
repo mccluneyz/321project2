@@ -370,7 +370,7 @@ namespace RecycleRank.Controllers
             return RedirectToAction("Map", "Recycling");
         }
 
-        // Material Management Actions (from MediaPage branch)
+        // Material Management Actions
         [HttpPost]
         public IActionResult CreateMaterial(string name, int pointsPerUnit)
         {
@@ -456,7 +456,7 @@ namespace RecycleRank.Controllers
             return RedirectToAction("ManageMaterials");
         }
 
-        // Event Management Actions (from main branch)
+        // Event Management Actions
         public IActionResult ManageEvents()
         {
             // Check if user is admin
