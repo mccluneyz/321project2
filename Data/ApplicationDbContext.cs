@@ -48,6 +48,11 @@ namespace RecycleRank.Data
                 .HasOne(p => p.User)
                 .WithMany()
                 .HasForeignKey(p => p.UserId);
+
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId);
         }
     }
 }

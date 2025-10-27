@@ -178,7 +178,20 @@
                 </a>
             </div>
             
-            <h1 class="mb-4">📅 Interactive Recycling Events Calendar</h1>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>📅 Interactive Recycling Events Calendar</h1>
+                @if (ViewBag.IsAdmin == true)
+                {
+                    <div class="admin-controls">
+                        <a href="/Admin/ManageEvents" class="btn btn-success">
+                            <i class="fas fa-cog me-2"></i>Manage Events
+                        </a>
+                        <a href="/Admin/AddEvent" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Event
+                        </a>
+                    </div>
+                }
+            </div>
             
             <!-- Success/Error Messages -->
             @if (TempData["Success"] != null)

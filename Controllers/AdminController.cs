@@ -292,5 +292,187 @@ namespace RecycleRank.Controllers
 
             return RedirectToAction("Map", "Recycling");
         }
+
+        // Event Management Actions
+        public IActionResult ManageEvents()
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var events = _context.Events
+                .Include(e => e.CreatedByUser)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToList();
+
+            return View(events);
+        }
+
+        public IActionResult AddEvent()
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddEvent(string title, string description, DateTime eventDate, string location)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(location))
+            {
+                TempData["Error"] = "All fields are required.";
+                return View();
+            }
+
+            if (eventDate < DateTime.Now)
+            {
+                TempData["Error"] = "Event date cannot be in the past.";
+                return View();
+            }
+
+            var newEvent = new Event
+            {
+                Title = title,
+                Description = description,
+                EventDate = eventDate,
+                Location = location,
+                CreatedAt = DateTime.Now,
+                CreatedByUserId = userId.Value,
+                IsActive = true
+            };
+
+            _context.Events.Add(newEvent);
+            _context.SaveChanges();
+
+            TempData["Success"] = $"Event '{title}' added successfully!";
+            return RedirectToAction("ManageEvents");
+        }
+
+        public IActionResult EditEvent(int id)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var eventToEdit = _context.Events.Find(id);
+            if (eventToEdit == null)
+            {
+                TempData["Error"] = "Event not found.";
+                return RedirectToAction("ManageEvents");
+            }
+
+            return View(eventToEdit);
+        }
+
+        [HttpPost]
+        public IActionResult EditEvent(int id, string title, string description, DateTime eventDate, string location, bool isActive)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var eventToEdit = _context.Events.Find(id);
+            if (eventToEdit == null)
+            {
+                TempData["Error"] = "Event not found.";
+                return RedirectToAction("ManageEvents");
+            }
+
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(location))
+            {
+                TempData["Error"] = "All fields are required.";
+                return View(eventToEdit);
+            }
+
+            eventToEdit.Title = title;
+            eventToEdit.Description = description;
+            eventToEdit.EventDate = eventDate;
+            eventToEdit.Location = location;
+            eventToEdit.IsActive = isActive;
+
+            _context.SaveChanges();
+
+            TempData["Success"] = $"Event '{title}' updated successfully!";
+            return RedirectToAction("ManageEvents");
+        }
+
+        [HttpPost]
+        public IActionResult DeleteEvent(int id)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var eventToDelete = _context.Events.Find(id);
+            if (eventToDelete != null)
+            {
+                var eventTitle = eventToDelete.Title;
+                _context.Events.Remove(eventToDelete);
+                _context.SaveChanges();
+                TempData["Success"] = $"Event '{eventTitle}' deleted successfully!";
+            }
+
+            return RedirectToAction("ManageEvents");
+        }
     }
 }
