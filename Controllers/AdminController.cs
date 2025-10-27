@@ -611,7 +611,7 @@ namespace RecycleRank.Controllers
         }
 
         [HttpPost]
-        public IActionResult DeleteEvent(int id)
+        public IActionResult DeleteEventById(int id)
         {
             // Check if user is admin
             var userId = HttpContext.Session.GetInt32("UserId");
