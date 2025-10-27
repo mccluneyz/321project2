@@ -151,7 +151,7 @@ namespace RecycleRank.Controllers
         }
 
         [HttpPost]
-        public IActionResult ToggleFlag(int eventId)
+        public IActionResult FlagEvent(int eventId)
         {
             // Check if user is admin
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -175,6 +175,83 @@ namespace RecycleRank.Controllers
             }
 
             return RedirectToAction("AllRecyclingEvents");
+        }
+
+        [HttpPost]
+        public IActionResult RejectEvent(int eventId)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var recyclingEvent = _context.RecyclingEvents.Find(eventId);
+            if (recyclingEvent != null)
+            {
+                // Find the user who created this event
+                var eventUser = _context.Users.Find(recyclingEvent.UserId);
+                if (eventUser != null)
+                {
+                    // Calculate points to remove (quantity * points per unit)
+                    var material = _context.Materials.FirstOrDefault(m => m.Name == recyclingEvent.Material);
+                    if (material != null)
+                    {
+                        var pointsToRemove = recyclingEvent.Quantity * material.PointsPerUnit;
+                        
+                        // Remove points from user's account
+                        eventUser.Points -= pointsToRemove;
+                        if (eventUser.Points < 0) eventUser.Points = 0; // Prevent negative points
+                        
+                        TempData["Success"] = $"Event rejected. Removed {pointsToRemove} points from {eventUser.Name}'s account.";
+                    }
+                    else
+                    {
+                        // If material not found, just remove a default amount or skip point removal
+                        TempData["Success"] = $"Event rejected. Material '{recyclingEvent.Material}' not found in system.";
+                    }
+                }
+
+                // Delete the event completely
+                _context.RecyclingEvents.Remove(recyclingEvent);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("FlaggedEvents");
+        }
+
+        [HttpPost]
+        public IActionResult ApproveEvent(int eventId)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var recyclingEvent = _context.RecyclingEvents.Find(eventId);
+            if (recyclingEvent != null)
+            {
+                recyclingEvent.IsFlagged = false; // Unflag the event (approve it)
+                _context.SaveChanges();
+                TempData["Success"] = "Event approved and unflagged successfully.";
+            }
+
+            return RedirectToAction("FlaggedEvents");
         }
 
         [HttpPost]
@@ -291,6 +368,91 @@ namespace RecycleRank.Controllers
             }
 
             return RedirectToAction("Map", "Recycling");
+        }
+
+        [HttpPost]
+        public IActionResult CreateMaterial(string name, int pointsPerUnit)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var material = new Material
+            {
+                Name = name,
+                PointsPerUnit = pointsPerUnit
+            };
+
+            _context.Materials.Add(material);
+            _context.SaveChanges();
+            TempData["Success"] = $"Material '{name}' added successfully!";
+
+            return RedirectToAction("ManageMaterials");
+        }
+
+        [HttpPost]
+        public IActionResult UpdateMaterial(int materialId, string name, int pointsPerUnit)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var material = _context.Materials.Find(materialId);
+            if (material != null)
+            {
+                material.Name = name;
+                material.PointsPerUnit = pointsPerUnit;
+                _context.SaveChanges();
+                TempData["Success"] = $"Material '{name}' updated successfully!";
+            }
+
+            return RedirectToAction("ManageMaterials");
+        }
+
+        [HttpPost]
+        public IActionResult DeleteMaterial(int materialId)
+        {
+            // Check if user is admin
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || !user.IsAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var material = _context.Materials.Find(materialId);
+            if (material != null)
+            {
+                var materialName = material.Name;
+                _context.Materials.Remove(material);
+                _context.SaveChanges();
+                TempData["Success"] = $"Material '{materialName}' deleted successfully!";
+            }
+
+            return RedirectToAction("ManageMaterials");
         }
     }
 }
